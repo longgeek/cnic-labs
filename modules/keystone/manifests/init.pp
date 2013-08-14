@@ -45,7 +45,7 @@ class keystone {
     # Conf
 	file { "/etc/keystone/logging.conf":
         content => template("keystone/logging.conf.erb"),
-        notify => File["/etc/keystone/keystone.conf"],
+        notify => Exec["keystone-db-sync"],
 	}
 
 	file { "/etc/keystone/keystone.conf":
@@ -71,5 +71,13 @@ class keystone {
         command => "sleep 5 && sh /etc/keystone/keystone.sh",
         path => $command_path,
         refreshonly => true,
+        notify => Exec["start keystone"],
+    }
+
+    exec { "start keystone":
+        command => "echo 'nohup keystone-all --config-file /etc/keystone/keystone.conf > /dev/null 2>&1 &' >> /etc/rc.local;
+                    touch /etc/keystone/.start-keystone",
+        path => $command_path,
+        creates => "/etc/keystone/.start-keystone",
     }
 }

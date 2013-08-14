@@ -38,12 +38,12 @@ class glance {
 
     file { "/etc/glance/glance-api.conf":
         content => template("glance/glance-api.conf.erb"),
-        notify => File["/etc/glance/glance-registry.conf"],
+        notify => Exec["glance db sync"],
     }
 
     file { "/etc/glance/glance-registry.conf":
         content => template("glance/glance-registry.conf.erb"),
-        notify => File["/etc/glance/glance-cache.conf"],
+        notify => Exec["glance db sync"],
     }
 
     file { "/etc/glance/glance-cache.conf":
@@ -52,10 +52,24 @@ class glance {
     }
 
     exec { "glance db sync":
-        command => "glance-manage db_sync && nohup glance-api --config-file /etc/glance/glance-api.conf > /dev/null 2>&1 & \
+        command => "glance-manage db_sync && \
+                    nohup glance-api --config-file /etc/glance/glance-api.conf > /dev/null 2>&1 & \
+                    nohup glance-registry --config-file /etc/glance/glance-registry.conf > /dev/null 2>&1 & \
+                    killall glance-api;
+                    killall glance-registry;
+                    nohup glance-api --config-file /etc/glance/glance-api.conf > /dev/null 2>&1 & \
                     nohup glance-registry --config-file /etc/glance/glance-registry.conf > /dev/null 2>&1 &",
         path => $command_path,
         refreshonly => true,
+        notify => Exec["start glance"],
+    }
+
+    exec { "start glance":
+        command => "echo 'nohup glance-api --config-file /etc/glance/glance-api.conf > /dev/null 2>&1 &' >> /etc/rc.local;
+                    echo 'nohup glance-registry --config-file /etc/glance/glance-registry.conf > /dev/null 2>&1 &' >> /etc/rc.local;
+                    touch /etc/glance/.start-glance",
+        path => $command_path,
+        creates => "/etc/glance/.start-glance",
         notify => File["/etc/glance/cirros-0.3.0-x86_64-disk.img"],
     }
 
