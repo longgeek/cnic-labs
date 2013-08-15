@@ -1,11 +1,11 @@
 node 'agent.local.com' {
-    Class["mysql"] -> Class["rabbitmq"] -> Class["keystone"] -> Class["glance"] -> Class["cinder"] -> Class["nova"] -> Class["horizon"]
-	include mysql, rabbitmq, keystone, glance, cinder, nova, horizon
+    Class["mysql"] -> Class["rabbitmq"] -> Class["keystone"] -> Class["cinder"] -> Class["nova"] -> Class["glance"] -> Class["horizon"]
+	include mysql, rabbitmq, keystone, cinder, nova, glance, horizon
 }
 
 
 $command_path                       = '/usr/local/sbin:/usr/local/bin:/sbin:/bin:/usr/sbin:/usr/bin:/root/bin:/bin/bash'
-
+$source_dir                         = '/opt/stack'
 ## MYSQL
 $mysql_host                         = '127.0.0.1'
 $mysql_root_password                = 'password'
@@ -23,16 +23,16 @@ $keystone_region                    = 'RegionOne'
 $email_domain                       = 'cnic.cn'
 $keystone_log_verbose			    = 'True'
 $keystone_log_debug				    = 'True'
-$keystone_db_user				    = 'keystoneuser'
-$keystone_db_name				    = 'keystonename'
-$keystone_db_password			    = 'keystonepass'
+$keystone_db_user				    = 'keystone'
+$keystone_db_name				    = 'keystone'
+$keystone_db_password			    = 'keystone'
 $keystone_logger_level              = 'DEBUG'
 $keystone_logger_handlers           = 'devel,production'
 
 ## GLANCE
-$glance_db_user                     = 'glanceuser'
-$glance_db_name                     = 'glancename'
-$glance_db_password                 = 'glancepass'
+$glance_db_user                     = 'glance'
+$glance_db_name                     = 'glance'
+$glance_db_password                 = 'glance'
 $glance_source_pack_name            = 'glance.tar.gz'
 $glance_client_source_pack_name     = 'python-glanceclient.tar.gz'
 $glance_log_verbose                 = 'True'
@@ -46,9 +46,9 @@ $rabbit_userid                      = 'guest'
 $rabbit_password                    = 'longgeek'
 
 ## CINDER
-$cinder_db_user                     = 'cinderuser'
-$cinder_db_name                     = 'cindername'
-$cinder_db_password                 = 'cinderpass'
+$cinder_db_user                     = 'cinder'
+$cinder_db_name                     = 'cinder'
+$cinder_db_password                 = 'cinder'
 $cinder_source_pack_name            = 'cinder.tar.gz'
 $cinder_client_source_pack_name     = 'python-cinderclient.tar.gz'
 $cinder_volume_group                = 'cinder-volumes'
@@ -61,14 +61,14 @@ $cinder_volume_disk_part            = ["sdb1"]                          # 指定
 
 
 ## NOVA
-$nova_db_user                       = 'novauser'
-$nova_db_name                       = 'novaname'
-$nova_db_password                   = 'novapass'
+$nova_db_user                       = 'nova'
+$nova_db_name                       = 'nova'
+$nova_db_password                   = 'nova'
 $nova_source_pack_name              = 'nova.tar.gz'
 $nova_client_source_pack_name       = 'python-novaclient.tar.gz'
 $nova_novnc_source_pack_name        = 'noVNC.tar.gz'
-$nova_apt_requires                  = ["bridge-utils", "kvm", "libvirt-bin", "libvirt-dev", "python-libvirt", "qemu-kvm", "python-numpy"]
-$nova_log_verbose                   = 'False'
+$nova_apt_requires                  = ["bridge-utils", "kvm", "libvirt-bin", "libvirt-dev", "python-libvirt", "qemu-kvm", "python-numpy", "python-M2Crypto"]
+$nova_log_verbose                   = 'True'
 $nova_log_debug                     = 'True'
 $nova_s3_host                       = '192.168.99.120'
 $nova_s3_port                       = '3333'

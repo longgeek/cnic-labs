@@ -8,36 +8,36 @@ class keystone {
 
     file { ["/etc/keystone", "/var/log/keystone", "/var/lib/keystone", "/var/run/keystone"]:
         ensure => directory,
-		notify => File["/usr/local/src/$keystone_source_pack_name"],
+		notify => File["$source_dir/$keystone_source_pack_name"],
     }
 
 	# Send tar pack
-	file { "/usr/local/src/$keystone_source_pack_name":
+	file { "$source_dir/$keystone_source_pack_name":
 		source => "puppet:///files/$keystone_source_pack_name",
 		notify => Exec["untar keystone"],
 	}
 
 	# Un pack & pip requires & install
 	exec { "untar keystone":
-		command => "tar zxvf $keystone_source_pack_name && cd keystone && pip install -r tools/pip-requires && python setup.py install && \
+		command => "tar zxvf $keystone_source_pack_name && cd keystone && pip install -r tools/pip-requires && python setup.py develop && \
                     cp etc/default_catalog.templates /etc/keystone/ && \
                     cp etc/policy.json /etc/keystone/",
 		path => $command_path,
-		cwd => "/usr/local/src",
+		cwd => $source_dir,
 		refreshonly => true,
-        notify => File["/usr/local/src/$keystone_client_source_pack_name"],
+        notify => File["$source_dir/$keystone_client_source_pack_name"],
 	}
 
     # Keystone Client
-    file { "/usr/local/src/$keystone_client_source_pack_name":
+    file { "$source_dir/$keystone_client_source_pack_name":
         source => "puppet:///files/$keystone_client_source_pack_name",
         notify => Exec["untar keystone-client"],
     }
 
 	exec { "untar keystone-client":
-		command => "tar zxvf $keystone_client_source_pack_name && cd python-keystoneclient && pip install -r requirements.txt && python setup.py install",
+		command => "tar zxvf $keystone_client_source_pack_name && cd python-keystoneclient && pip install -r tools/pip-requires && python setup.py develop",
 		path => $command_path,
-		cwd => "/usr/local/src",
+		cwd => $source_dir,
 		refreshonly => true,
         notify => File["/etc/keystone/logging.conf"],
 	}

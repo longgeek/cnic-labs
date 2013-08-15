@@ -1,20 +1,20 @@
 <VirtualHost *:80>
-    WSGIScriptAlias / /usr/local/src/horizon/openstack_dashboard/wsgi/django.wsgi
-    WSGIDaemonProcess horizon user=apache group=apache processes=3 threads=10 home=/usr/local/src/horizon/openstack_dashboard/wsgi/django.wsgi
+    WSGIScriptAlias / <%= source_dir %>/horizon/openstack_dashboard/wsgi/django.wsgi
+    WSGIDaemonProcess horizon user=apache group=apache processes=3 threads=10 home=<%= source_dir %>/horizon/openstack_dashboard/wsgi/django.wsgi
 
     SetEnv APACHE_RUN_USER apache
     SetEnv APACHE_RUN_GROUP apache
     WSGIProcessGroup horizon
 
-    DocumentRoot /usr/local/src/horizon/.blackhole/
-    Alias /media /usr/local/src/horizon/openstack_dashboard/static
+    DocumentRoot <%= source_dir %>/horizon/.blackhole/
+    Alias /media <%= source_dir %>/horizon/openstack_dashboard/static
 
     <Directory />
         Options FollowSymLinks
         AllowOverride None
     </Directory>
 
-    <Directory /usr/local/src/horizon/>
+    <Directory <%= source_dir %>/horizon/>
         Options Indexes FollowSymLinks MultiViews
         AllowOverride None
         Order allow,deny

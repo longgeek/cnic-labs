@@ -23,32 +23,32 @@ class cinder {
         hasrestart => true,
     }
 
-    file { "/usr/local/src/$cinder_source_pack_name":
+    file { "$source_dir/$cinder_source_pack_name":
         source => "puppet:///files/$cinder_source_pack_name",
         notify => Exec["untar cinder"],
     }
 
     exec { "untar cinder":
         command => "tar zxvf $cinder_source_pack_name && cd cinder && \ 
-                    pip install -r tools/pip-requires; python setup.py install && \
+                    pip install -r tools/pip-requires; python setup.py develop && \
                     cp etc/cinder/policy.json /etc/cinder/ && \
                     cp etc/cinder/rootwrap.conf /etc/cinder && \
                     cp -r etc/cinder/rootwrap.d/ /etc/cinder",
-        cwd => "/usr/local/src",
+        cwd => $source_dir,
         path => $command_path,
         refreshonly => true,
-        notify => File["/usr/local/src/$cinder_client_source_pack_name"],
+        notify => File["$source_dir/$cinder_client_source_pack_name"],
     }
 
-    file { "/usr/local/src/$cinder_client_source_pack_name":
+    file { "$source_dir/$cinder_client_source_pack_name":
         source => "puppet:///files/$cinder_client_source_pack_name",
         notify => Exec["untar cinder-client"],
     }
 
     exec { "untar cinder-client":
         command => "tar zxvf $cinder_client_source_pack_name && cd python-cinderclient && \
-                    pip install -r requiresments.txt; python setup.py install",
-        cwd => "/usr/local/src",
+                    pip install -r tools/pip-requires; python setup.py develop",
+        cwd => $source_dir,
         path => $command_path,
         refreshonly => true,
         notify => File["/etc/cinder/create-cinder-volumes.py"],

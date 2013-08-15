@@ -74,7 +74,6 @@ CINDER_ID=$(keystone --token $SERVICE_TOKEN --endpoint $SERVICE_ENDPOINT service
 GLANCE_ID=$(keystone --token $SERVICE_TOKEN --endpoint $SERVICE_ENDPOINT service-create --name=glance --type=image --description='OpenStack Image Service'| awk '/ id / { print $4 }' )
 SWIFT_ID=$(keystone --token $SERVICE_TOKEN --endpoint $SERVICE_ENDPOINT service-create --name=swift --type=object-store --description='OpenStack Storage Service' | awk '/ id / { print $4 }'  )
 EC2_ID=$(keystone --token $SERVICE_TOKEN --endpoint $SERVICE_ENDPOINT service-create --name=ec2 --type=ec2 --description='OpenStack EC2 service'| awk '/ id / { print $4 }' )
-QUANTUM_ID=$(keystone --token $SERVICE_TOKEN --endpoint $SERVICE_ENDPOINT service-create --name=quantum --type=network --description='OpenStack Networking service'| awk '/ id / { print $4 }'  )
 
 ## Create Endpoint
 #identity
@@ -94,6 +93,3 @@ keystone --token $SERVICE_TOKEN --endpoint $SERVICE_ENDPOINT endpoint-create --r
 
 #ec2
 keystone --token $SERVICE_TOKEN --endpoint $SERVICE_ENDPOINT endpoint-create --region $KEYSTONE_REGION --service-id=$EC2_ID --publicurl http://"$EC2_IP":8773/services/Cloud --adminurl http://"$EC2_IP":8773/services/Admin --internalurl http://"$EC2_IP":8773/services/Cloud
-
-#network
-#keystone --token $SERVICE_TOKEN --endpoint $SERVICE_ENDPOINT endpoint-create --region $KEYSTONE_REGION --service-id=$QUANTUM_ID --publicurl http://"$QUANTUM_IP":9696/ --adminurl http://"$QUANTUM_IP":9696/ --internalurl http://"$QUANTUM_IP":9696/

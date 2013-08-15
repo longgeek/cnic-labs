@@ -16,41 +16,41 @@ class nova {
     # mkdir dir
     file { ["/etc/nova", "/var/log/nova", "/var/lib/nova", "/var/run/nova", "/var/lib/nova/instances", "/var/lock/nova"]:
         ensure => directory,
-        notify => File["/usr/local/src/$nova_source_pack_name"],
+        notify => File["$source_dir/$nova_source_pack_name"],
     }
 
     # nova pack
-    file { "/usr/local/src/$nova_source_pack_name":
+    file { "$source_dir/$nova_source_pack_name":
         source => "puppet:///files/$nova_source_pack_name",
         notify => Exec["untar nova"],
     }
 
     exec { "untar nova":
-        command => "tar zxvf $nova_source_pack_name && cd nova && pip install -r tools/pip-requires && python setup.py install && \
+        command => "tar zxvf $nova_source_pack_name && cd nova && pip install -r tools/pip-requires && python setup.py develop && \
                     cp -r etc/nova/rootwrap.d /etc/nova/ && \
                     cp etc/nova/policy.json /etc/nova/",
         path => $command_path,
-        cwd => "/usr/local/src",
+        cwd => $source_dir,
         refreshonly => true,
-        notify => File["/usr/local/src/$nova_client_source_pack_name"],
+        notify => File["$source_dir/$nova_client_source_pack_name"],
     }
 
     # python-novaclient pack
-    file { "/usr/local/src/$nova_client_source_pack_name":
+    file { "$source_dir/$nova_client_source_pack_name":
         source => "puppet:///files/$nova_client_source_pack_name",
         notify => Exec["untar nova-client"],
     }
 
     exec { "untar nova-client":
-        command => "tar zxvf $nova_client_source_pack_name && cd python-novaclient && pip install -r requirements.txt && python setup.py install",
+        command => "tar zxvf $nova_client_source_pack_name && cd python-novaclient && pip install -r tools/pip-requires && python setup.py develop",
         path => $command_path,
-        cwd => "/usr/local/src",
+        cwd => $source_dir,
         refreshonly => true,
-        notify => File["/usr/local/src/$nova_novnc_source_pack_name"],
+        notify => File["$source_dir/$nova_novnc_source_pack_name"],
     }
 
     # noVNC
-    file { "/usr/local/src/$nova_novnc_source_pack_name":
+    file { "$source_dir/$nova_novnc_source_pack_name":
         source => "puppet:///files/$nova_novnc_source_pack_name",
         notify => Exec["untar noVNC"],
     }
@@ -58,21 +58,21 @@ class nova {
     exec { "untar noVNC":
         command => "tar zxvf $nova_novnc_source_pack_name && rm -fr /usr/share/novnc; mv noVNC /usr/share/novnc",
         path => $command_path,
-        cwd => "/usr/local/src",
+        cwd => $source_dir,
         refreshonly => true,
-        notify => File["/usr/local/src/websockify.tar.gz"],
+        notify => File["$source_dir/websockify.tar.gz"],
     }
 
     # websockify pack
-    file { "/usr/local/src/websockify.tar.gz":
+    file { "$source_dir/websockify.tar.gz":
         source => "puppet:///files/websockify.tar.gz",
         notify => Exec["untar websockify"],
     }
 
     exec { "untar websockify":
-        command => "tar zxvf websockify.tar.gz && cd websockify && python setup.py install",
+        command => "tar zxvf websockify.tar.gz && cd websockify && python setup.py develop",
         path => $command_path,
-        cwd => "/usr/local/src",
+        cwd => $source_dir,
         refreshonly => true,
         notify => File["/etc/nova/nova.conf"],
     }
