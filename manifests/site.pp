@@ -1,11 +1,13 @@
 node 'agent.local.com' {
-    Class["mysql"] -> Class["rabbitmq"] -> Class["keystone"] -> Class["cinder"] -> Class["nova"] -> Class["glance"] -> Class["horizon"]
-	include mysql, rabbitmq, keystone, cinder, nova, glance, horizon
+    Class["all_sources"] -> Class["mysql"] -> Class["rabbitmq"] -> Class["keystone"] -> Class["cinder"] -> Class["nova"] -> Class["glance"] -> Class["horizon"]
+	include all_sources, mysql, rabbitmq, keystone, cinder, nova, glance, horizon
 }
 
 
 $command_path                       = '/usr/local/sbin:/usr/local/bin:/sbin:/bin:/usr/sbin:/usr/bin:/root/bin:/bin/bash'
 $source_dir                         = '/opt/stack'
+$source_apt_requires	            = ["build-essential", "python-dev", "python-setuptools", "python-pip", "libxml2-dev", "libxslt1-dev", "git"]
+$pip_index_url                      = 'http://pypi.v2ex.com/simple'
 ## MYSQL
 $mysql_host                         = '127.0.0.1'
 $mysql_root_password                = 'password'
@@ -14,7 +16,6 @@ $mysql_root_password                = 'password'
 $keystone_host                      = '192.168.99.120'
 $keystone_source_pack_name	        = 'keystone.tar.gz'
 $keystone_client_source_pack_name	= 'python-keystoneclient.tar.gz'
-$keystone_apt_requires			    = ["build-essential", "python-dev", "python-setuptools", "python-pip", "libxml2-dev", "libxslt1-dev", "git"]
 $admin_token					    = 'admin'
 $admin_password                     = 'password'
 $service_password                   = 'password'
@@ -22,7 +23,7 @@ $service_tenant_name                = 'service'
 $keystone_region                    = 'RegionOne'
 $email_domain                       = 'cnic.cn'
 $keystone_log_verbose			    = 'True'
-$keystone_log_debug				    = 'True'
+$keystone_log_debug				    = 'False'
 $keystone_db_user				    = 'keystone'
 $keystone_db_name				    = 'keystone'
 $keystone_db_password			    = 'keystone'
@@ -36,7 +37,7 @@ $glance_db_password                 = 'glance'
 $glance_source_pack_name            = 'glance.tar.gz'
 $glance_client_source_pack_name     = 'python-glanceclient.tar.gz'
 $glance_log_verbose                 = 'True'
-$glance_log_debug                   = 'True'
+$glance_log_debug                   = 'False'
 $glance_default_store               = 'file'
 $glance_host                        = '192.168.99.120'
 
@@ -53,7 +54,7 @@ $cinder_source_pack_name            = 'cinder.tar.gz'
 $cinder_client_source_pack_name     = 'python-cinderclient.tar.gz'
 $cinder_volume_group                = 'cinder-volumes'
 $cinder_log_verbose                 = 'True'
-$cinder_log_debug                   = 'True'
+$cinder_log_debug                   = 'False'
 $cinder_volume_format               = 'file'                            # 默认为 'file', 用文件来模拟分区, 设置为 'file'是依赖 '$cinder_volume_size'
                                                                         # 设置为 'disk'时，依赖 '$cinder_volume_disk_part’
 $cinder_volume_size                 = '1G'                              # 使用 file 的话需要指定大小, 必须有单位
@@ -67,9 +68,9 @@ $nova_db_password                   = 'nova'
 $nova_source_pack_name              = 'nova.tar.gz'
 $nova_client_source_pack_name       = 'python-novaclient.tar.gz'
 $nova_novnc_source_pack_name        = 'noVNC.tar.gz'
-$nova_apt_requires                  = ["bridge-utils", "kvm", "libvirt-bin", "libvirt-dev", "python-libvirt", "qemu-kvm", "python-numpy", "python-M2Crypto"]
+$nova_apt_requires                  = ["bridge-utils", "kvm", "libvirt-bin", "libvirt-dev", "python-libvirt", "qemu-kvm", "python-numpy", "python-m2crypto"]
 $nova_log_verbose                   = 'True'
-$nova_log_debug                     = 'True'
+$nova_log_debug                     = 'False'
 $nova_s3_host                       = '192.168.99.120'
 $nova_s3_port                       = '3333'
 $nova_my_ip                         = '192.168.99.120'
@@ -81,6 +82,8 @@ $vlan_interface                     = 'eth0'
 $flat_network_bridge                = 'br100'
 $flat_interface                     = 'eth0'
 $fixed_range                        = '10.0.0.0/20'
+$floating_range                     = '192.168.99.32/27'
+$network_size                       = '32'
 $ec2_dmz_host                       = '192.168.99.120'
 $novncproxy_host                    = '192.168.99.120'
 $xvpvncproxy_host                   = '192.168.99.120'
