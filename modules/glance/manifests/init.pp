@@ -1,76 +1,49 @@
 class glance {
+        
+    file { 
+        "/etc/init.d/glance-api":
+            source => "puppet:///files/contrib/glance/glance-api",
+            mode => "0755";
 
-    file { ["/etc/glance", "/var/lib/glance/", "/var/run/glance", "/var/log/glance", "/var/lib/glance/images", "/var/lib/glance/image-cache/", "/var/lib/glance/scrubber"]:
-        ensure => directory,
-        notify => File["$source_dir/$glance_source_pack_name"],
-    }
+        "/etc/init.d/glance-registry":
+            source => "puppet:///files/contrib/glance/glance-registry",
+            mode => "0755";
 
-    file { "$source_dir/$glance_source_pack_name":
-        source => "puppet:///files/$glance_source_pack_name",
-        notify => Exec["untar glance"],
-    }
 
-    exec { "untar glance":
-        command => "tar zxvf $glance_source_pack_name && \
-                    cd glance && pip install -r tools/pip-requires; python setup.py develop && \
-                    cp etc/glance-api-paste.ini /etc/glance/ && \
-                    cp etc/schema-image.json /etc/glance/ && \
-                    cp etc/glance-registry-paste.ini /etc/glance/ && \
-                    cp etc/policy.json /etc/glance", 
-        cwd => $source_dir,
-        path => $command_path,
-        refreshonly => true,
-        notify => File["$source_dir/$glance_client_source_pack_name"],
-    }
+        "/etc/init/glance-api.conf":
+            source => "puppet:///files/contrib/glance/glance-api.conf",
+            mode => "0644";
 
-    file { "$source_dir/$glance_client_source_pack_name":
-        source => "puppet:///files/$glance_client_source_pack_name",
-        notify => Exec["untar glance-client"],
-    }
-
-    exec { "untar glance-client":
-        command => "tar zxvf $glance_client_source_pack_name && cd python-glanceclient && \
-                    pip install -r tools/pip-requires; python setup.py develop",
-        path => $command_path,
-        cwd => $source_dir,
-        refreshonly => true,
-        notify => File["/etc/glance/glance-api.conf"],
-    }
+        "/etc/init/glance-registry.conf":
+            source => "puppet:///files/contrib/glance/glance-registry.conf",
+            mode => "0644";
+    }   
 
     file { "/etc/glance/glance-api.conf":
         content => template("glance/glance-api.conf.erb"),
+        owner => "glance",
+        require => File["/etc/init/glance-registry.conf"],
         notify => Exec["glance db sync"],
     }
 
     file { "/etc/glance/glance-registry.conf":
         content => template("glance/glance-registry.conf.erb"),
+        owner => "glance",
         notify => Exec["glance db sync"],
     }
 
     file { "/etc/glance/glance-cache.conf":
         content => template("glance/glance-cache.conf.erb"),
+        owner => "glance",
         notify => Exec["glance db sync"],
     }
 
     exec { "glance db sync":
-        command => "glance-manage db_sync && \
-                    nohup glance-api --config-file /etc/glance/glance-api.conf > /dev/null 2>&1 & \
-                    nohup glance-registry --config-file /etc/glance/glance-registry.conf > /dev/null 2>&1 & \
-                    killall glance-api;
-                    killall glance-registry;
-                    nohup glance-api --config-file /etc/glance/glance-api.conf > /dev/null 2>&1 & \
-                    nohup glance-registry --config-file /etc/glance/glance-registry.conf > /dev/null 2>&1 &",
+        command => "glance-manage db_sync; \
+                    /etc/init.d/glance-api restart; \
+                    /etc/init.d/glance-registry restart",
         path => $command_path,
         refreshonly => true,
-        notify => Exec["start glance"],
-    }
-
-    exec { "start glance":
-        command => "echo 'nohup glance-api --config-file /etc/glance/glance-api.conf > /dev/null 2>&1 &' >> /etc/rc.local;
-                    echo 'nohup glance-registry --config-file /etc/glance/glance-registry.conf > /dev/null 2>&1 &' >> /etc/rc.local;
-                    touch /etc/glance/.start-glance",
-        path => $command_path,
-        creates => "/etc/glance/.start-glance",
         notify => File["/etc/glance/cirros-0.3.0-x86_64-disk.img"],
     }
 

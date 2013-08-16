@@ -1,60 +1,32 @@
 class keystone {
 
-	#Install deb requires
-	package { $keystone_apt_requires:
-		ensure => installed,
-        notify => File["/etc/keystone", "/var/log/keystone", "/var/lib/keystone", "/var/run/keystone"],
-	}
+    file { 
+        "/etc/init.d/keystone":
+            source => "puppet:///files/contrib/keystone/keystone",
+            mode => "0755";
 
-    file { ["/etc/keystone", "/var/log/keystone", "/var/lib/keystone", "/var/run/keystone"]:
-        ensure => directory,
-		notify => File["$source_dir/$keystone_source_pack_name"],
-    }
-
-	# Send tar pack
-	file { "$source_dir/$keystone_source_pack_name":
-		source => "puppet:///files/$keystone_source_pack_name",
-		notify => Exec["untar keystone"],
-	}
-
-	# Un pack & pip requires & install
-	exec { "untar keystone":
-		command => "tar zxvf $keystone_source_pack_name && cd keystone && pip install -r tools/pip-requires && python setup.py develop && \
-                    cp etc/default_catalog.templates /etc/keystone/ && \
-                    cp etc/policy.json /etc/keystone/",
-		path => $command_path,
-		cwd => $source_dir,
-		refreshonly => true,
-        notify => File["$source_dir/$keystone_client_source_pack_name"],
-	}
-
-    # Keystone Client
-    file { "$source_dir/$keystone_client_source_pack_name":
-        source => "puppet:///files/$keystone_client_source_pack_name",
-        notify => Exec["untar keystone-client"],
-    }
-
-	exec { "untar keystone-client":
-		command => "tar zxvf $keystone_client_source_pack_name && cd python-keystoneclient && pip install -r tools/pip-requires && python setup.py develop",
-		path => $command_path,
-		cwd => $source_dir,
-		refreshonly => true,
-        notify => File["/etc/keystone/logging.conf"],
-	}
+        "/etc/init/keystone.conf":
+            source => "puppet:///files/contrib/keystone/keystone.conf",
+            mode => "0644";
+    }   
 
     # Conf
 	file { "/etc/keystone/logging.conf":
         content => template("keystone/logging.conf.erb"),
+        owner => "keystone",
+        require => File["/etc/init/keystone.conf"],
         notify => Exec["keystone-db-sync"],
 	}
 
 	file { "/etc/keystone/keystone.conf":
         content => template("keystone/keystone.conf.erb"),
+        owner => "keystone",
         notify => Exec["keystone-db-sync"],
 	}
 
     exec { "keystone-db-sync":
-        command => "keystone-manage db_sync && nohup keystone-all --config-file /etc/keystone/keystone.conf > /dev/null 2>&1 &)",
+        command => "keystone-manage db_sync; \
+                    /etc/init.d/keystone restart",
         path => $command_path,
         refreshonly => true,
         notify => File["/etc/keystone/keystone.sh"],
@@ -71,13 +43,5 @@ class keystone {
         command => "sleep 5 && sh /etc/keystone/keystone.sh",
         path => $command_path,
         refreshonly => true,
-        notify => Exec["start keystone"],
-    }
-
-    exec { "start keystone":
-        command => "echo 'nohup keystone-all --config-file /etc/keystone/keystone.conf > /dev/null 2>&1 &' >> /etc/rc.local;
-                    touch /etc/keystone/.start-keystone",
-        path => $command_path,
-        creates => "/etc/keystone/.start-keystone",
     }
 }

@@ -1,13 +1,34 @@
 class cinder {
+    # All cinder init.d/ scripts
+    file { 
+        "/etc/init.d/cinder-api":
+            source => "puppet:///files/contrib/cinder/cinder-api",
+            mode => "0755";
 
-    file { ["/etc/cinder", "/var/lib/cinder", "/var/log/cinder/", "/var/run/cinder", "/var/lib/cinder/images"]:
-        ensure => directory,
-        notify => Package["iscsitarget", "open-iscsi", "iscsitarget-dkms"],
-    }
+        "/etc/init.d/cinder-scheduler":
+            source => "puppet:///files/contrib/cinder/cinder-scheduler",
+            mode => "0755";
+
+        "/etc/init.d/cinder-volume":
+            source => "puppet:///files/contrib/cinder/cinder-volume",
+            mode => "0755";
+
+
+        "/etc/init/cinder-api.conf":
+            source => "puppet:///files/contrib/cinder/cinder-api.conf",
+            mode => "0644";
+        "/etc/init/cinder-scheduler.conf":
+            source => "puppet:///files/contrib/cinder/cinder-scheduler.conf",
+            mode => "0644";
+        "/etc/init/cinder-volume.conf":
+            source => "puppet:///files/contrib/cinder/cinder-volume.conf",
+            mode => "0644";
+    }   
 
     package { ["iscsitarget", "open-iscsi", "iscsitarget-dkms"]:
         ensure => installed,
         notify => Exec["iscsitarget enable"],
+        require => File["/etc/init/cinder-volume.conf"],
     }
 
     exec { "iscsitarget enable":
@@ -21,36 +42,6 @@ class cinder {
         ensure => running,
         hasstatus => true,
         hasrestart => true,
-    }
-
-    file { "$source_dir/$cinder_source_pack_name":
-        source => "puppet:///files/$cinder_source_pack_name",
-        notify => Exec["untar cinder"],
-    }
-
-    exec { "untar cinder":
-        command => "tar zxvf $cinder_source_pack_name && cd cinder && \ 
-                    pip install -r tools/pip-requires; python setup.py develop && \
-                    cp etc/cinder/policy.json /etc/cinder/ && \
-                    cp etc/cinder/rootwrap.conf /etc/cinder && \
-                    cp -r etc/cinder/rootwrap.d/ /etc/cinder",
-        cwd => $source_dir,
-        path => $command_path,
-        refreshonly => true,
-        notify => File["$source_dir/$cinder_client_source_pack_name"],
-    }
-
-    file { "$source_dir/$cinder_client_source_pack_name":
-        source => "puppet:///files/$cinder_client_source_pack_name",
-        notify => Exec["untar cinder-client"],
-    }
-
-    exec { "untar cinder-client":
-        command => "tar zxvf $cinder_client_source_pack_name && cd python-cinderclient && \
-                    pip install -r tools/pip-requires; python setup.py develop",
-        cwd => $source_dir,
-        path => $command_path,
-        refreshonly => true,
         notify => File["/etc/cinder/create-cinder-volumes.py"],
     }
 
@@ -67,38 +58,24 @@ class cinder {
         notify => File["/etc/cinder/cinder.conf"],
     }
 
-
     file { "/etc/cinder/cinder.conf":
         content => template("cinder/cinder.conf.erb"),
+        owner => "cinder",
         notify => Exec["cinder db_sync"],
     }
 
     file { "/etc/cinder/api-paste.ini":
         content => template("cinder/api-paste.ini.erb"),
+        owner => "cinder",
         notify => Exec["cinder db_sync"],
     }
 
     exec { "cinder db_sync":
-        command => "cinder-manage db sync && \
-                    nohup cinder-api --config-file /etc/cinder/cinder.conf > /dev/null 2>&1 & \
-                    nohup cinder-volume --config-file /etc/cinder/cinder.conf > /dev/null 2>&1 & \
-                    nohup cinder-scheduler --config-file /etc/cinder/cinder.conf > /dev/null 2>&1 & \
-                    killall cinder-api cinder-volume cinder-scheduler; \
-                    nohup cinder-api --config-file /etc/cinder/cinder.conf > /dev/null 2>&1 & \
-                    nohup cinder-volume --config-file /etc/cinder/cinder.conf > /dev/null 2>&1 & \
-                    nohup cinder-scheduler --config-file /etc/cinder/cinder.conf > /dev/null 2>&1 &",
+        command => "cinder-manage db sync; \
+                    /etc/init.d/cinder-api restart; \
+                    /etc/init.d/cinder-scheduler restart; \
+                    /etc/init.d/cinder-volume restart",
         path => $command_path,
         refreshonly => true,
-        notify => Exec["start cinder"],
     }
-
-    exec { "start cinder":
-        command => "echo 'nohup cinder-api --config-file /etc/cinder/cinder.conf > /dev/null 2>&1 &' >> /etc/rc.local;
-                    echo 'nohup cinder-volume --config-file /etc/cinder/cinder.conf > /dev/null 2>&1 &' >> /etc/rc.local;
-                    echo 'nohup cinder-scheduler --config-file /etc/cinder/cinder.conf > /dev/null 2>&1 &' >> /etc/rc.local;
-                    touch /etc/cinder/.start-cinder",
-        path => $command_path,
-        creates => "/etc/cinder/.start-cinder",
-    }
-
 }
