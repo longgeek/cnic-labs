@@ -40,6 +40,8 @@ class glance {
 
     exec { "glance db sync":
         command => "glance-manage db_sync; \
+                    touch /var/log/glance/registry.log; \
+                    chown glance:root /var/log/glance/registry.log; \
                     /etc/init.d/glance-api restart; \
                     /etc/init.d/glance-registry restart",
         path => $command_path,

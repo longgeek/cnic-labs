@@ -1,9 +1,9 @@
-class all_sources::nova {
-
+### Nova
     # mkdir dir
     file { ["/etc/nova", "/var/log/nova", "/var/lib/nova", "/var/run/nova", "/var/lib/nova/instances", "/var/lock/nova", "/home/nova"]:
         ensure => directory,
         owner => "nova",
+        require => Exec["untar cinder-client"],
         notify => File["$source_dir/$nova_source_pack_name"],
     }
 
@@ -78,4 +78,3 @@ class all_sources::nova {
         cwd => $source_dir,
         refreshonly => true,
     }
-}

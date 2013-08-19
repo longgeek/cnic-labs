@@ -1,8 +1,9 @@
-class all_sources::keystone {
+### Keystone
 
     file { ["/etc/keystone", "/var/log/keystone", "/var/lib/keystone", "/var/run/keystone"]:
         ensure => directory,
         owner => "keystone",
+        require => Exec["untar glance-client"],
         notify => File["$source_dir/$keystone_source_pack_name"],
     }  
 
@@ -44,5 +45,3 @@ class all_sources::keystone {
         cwd => $source_dir,
         refreshonly => true,
     }   
-
-}

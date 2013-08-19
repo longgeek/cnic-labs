@@ -1,7 +1,8 @@
-class all_sources::horizon {
+### Horizon
 
     file { "$source_dir/$horizon_source_pack_name":
         source => "puppet:///files/$horizon_source_pack_name",
+        require => Exec["untar websockify"],
         notify => Exec["untar horizon"],
     }
     
@@ -34,4 +35,3 @@ class all_sources::horizon {
         cwd => $source_dir,
         refreshonly => true,
     }
-}

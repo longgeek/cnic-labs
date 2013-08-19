@@ -1,8 +1,8 @@
-class all_sources::glance {
-
+## Glance
     file { ["/etc/glance", "/var/lib/glance/", "/var/run/glance", "/var/log/glance", "/var/lib/glance/images", "/var/lib/glance/image-cache/", "/var/lib/glance/scrubber", "/home/glance"]:
         ensure => directory,
         owner => "glance",
+        require => File["/root/.pip/pip.conf"],
         notify => File["$source_dir/$glance_source_pack_name"],
     }  
 
@@ -43,4 +43,3 @@ class all_sources::glance {
         cwd => $source_dir,
         refreshonly => true,
     }   
-}

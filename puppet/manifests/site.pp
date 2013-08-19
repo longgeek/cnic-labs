@@ -10,7 +10,7 @@ $source_apt_requires	            = ["build-essential", "python-dev", "python-set
 $pip_index_url                      = 'http://pypi.v2ex.com/simple'
 ## MYSQL
 $mysql_host                         = '127.0.0.1'
-$mysql_root_password                = 'password'
+$mysql_root_password                = 'csdb123cnic'
 
 ## KEYSTONE
 $keystone_host                      = '192.168.99.120'
@@ -57,14 +57,14 @@ $cinder_log_verbose                 = 'True'
 $cinder_log_debug                   = 'False'
 $cinder_volume_format               = 'file'                            # 默认为 'file', 用文件来模拟分区, 设置为 'file'是依赖 '$cinder_volume_size'
                                                                         # 设置为 'disk'时，依赖 '$cinder_volume_disk_part’
-$cinder_volume_size                 = '1G'                              # 使用 file 的话需要指定大小, 必须有单位
+$cinder_volume_size                 = '5G'                              # 使用 file 的话需要指定大小, 必须有单位
 $cinder_volume_disk_part            = ["sdb1"]                          # 指定 cinder 使用哪些硬盘分区, 例如: "['sdb1', 'sdc1', 'sdd1']"
 
 
 ## NOVA
-$nova_db_user                       = 'nova'
+$nova_db_user                       = 'root'
 $nova_db_name                       = 'nova'
-$nova_db_password                   = 'nova'
+$nova_db_password                   = 'csdb123cnic'
 $nova_source_pack_name              = 'nova.tar.gz'
 $nova_client_source_pack_name       = 'python-novaclient.tar.gz'
 $nova_novnc_source_pack_name        = 'noVNC.tar.gz'
@@ -96,7 +96,9 @@ $horizon_db_user                    = 'horizon'
 $horizon_db_name                    = 'horizon'
 $horizon_db_password                = 'horizon'
 
-
-
+## MONITOR
+$monitor_db_name                    = 'monitor'
+$monitor_db_user                    = 'monitor'
+$monitor_db_password                = 'monitor'
 ## SWIFT
 $swift_proxy_host                   = '192.168.99.120'
