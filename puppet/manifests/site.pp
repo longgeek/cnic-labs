@@ -7,7 +7,6 @@ node 'agent.local.com' {
 $command_path                       = '/usr/local/sbin:/usr/local/bin:/sbin:/bin:/usr/sbin:/usr/bin:/root/bin:/bin/bash'
 $source_dir                         = '/opt/stack'
 $source_apt_requires	            = ["build-essential", "python-dev", "python-setuptools", "python-pip", "libxml2-dev", "libxslt1-dev", "git"]
-$pip_index_url                      = 'http://pypi.v2ex.com/simple'
 ## MYSQL
 $mysql_host                         = '127.0.0.1'
 $mysql_root_password                = 'csdb123cnic'
