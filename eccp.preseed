@@ -25,7 +25,7 @@ d-i     netcfg/confirm_static   boolean true
 d-i     clock-setup/utc boolean true
 d-i     clock-setup/ntp boolean true
 d-i     clock-setup/ntp-server  string ntp.ubuntu.com
-# d-i     time/zone string Asia/Shanghai
+d-i     time/zone string Asia/Shanghai
 
 d-i     partman/early_command string debconf-set partman-auto/disk `list-devices disk | head -n1`
 d-i     partman-iscsi/mainmenu string finish
@@ -43,8 +43,9 @@ d-i     base-installer/kernel/image     string linux-server
 
 # Account setup
 d-i     passwd/root-login boolean root
-d-i     passwd/root-password password root
-d-i     passwd/root-password-again password root
+d-i     passwd/root-password password changeme
+d-i     passwd/root-password-again password changeme
+#d-i     passwd/root-password-crypted password $1$3nGno0$c4rp7NcQRAcJV3AdzKV890
 d-i     user-setup/allow-password-weak boolean true
 d-i     passwd/make-user boolean false
 d-i     user-setup/encrypt-home boolean false
@@ -90,4 +91,3 @@ d-i     pkgsel/include string  vim openssh-server ntp lvm2
 # Set cloud-init data source to manual seeding
 cloud-init      cloud-init/datasources  multiselect     NoCloud
 
-d-i     preseed/late_command string true && cd /target; wget http://192.168.64.100/post.sh; chmod +x ./post.sh; chroot ./ ./post.sh; true 
