@@ -42,6 +42,10 @@ grep $COBBLER_WEB_PORT $COBBLER_PATH || sed -i "/http_port: .*$/ s/80/$COBBLER_W
 /etc/init.d/apache2 restart
 cp $TOP_DIR/eccp.preseed $COBBLER_PRESEED
 sed -i "s/changeme/$ROOT_PASSWD/g" $COBBLER_PRESEED
+sed -i "s/hostname string.*$/hostname string $IPADDR/g" $COBBLER_PRESEED
+sed -i "s/directory string.*$/\/cobbler\/ks_mirror\/$ISO_TYPE/g" $COBBLER_PRESEED
+sed -i "s/security_host string.*$/security_host string $IPADDR $IPADDR/g" $COBBLER_PRESEED
+sed -i "s/security_path string.*$/\/cobbler\/ks_mirror\/$ISO_TYPE/g" $COBBLER_PRESEED
 
 ## DNSmasq 模版设置
 cat > /etc/cobbler/dnsmasq.template << _GEEK_
@@ -54,7 +58,7 @@ cat > /etc/cobbler/dnsmasq.template << _GEEK_
 #enable-dbus
 read-ethers
 addn-hosts = /var/lib/cobbler/cobbler_hosts
-#domain=
+domain=$(hostname | awk -F. '{print $2"."$3}')
 
 #dhcp-range=192.168.99.5,192.168.99.200
 dhcp-option=3,\$next_server
@@ -94,7 +98,11 @@ echo "$IPADDR  $(hostname)" >> /etc/hosts
 
 ## 配置 Puppet
 apt-get -y --force-yes install puppetmaster || exit 1
+sed -i "s/my_ip/$IPADDR\/pip-packages/g" $TOP_DIR/puppet/modules/all_sources/templates/pip.conf.erb
+sed -i "s/my_ip/$IPADDR\/pip-packages/g" $TOP_DIR/puppet/modules/all_sources/templates/pydistutils.cfg.erb
 cp -r $TOP_DIR/puppet/* /etc/puppet/
+cp -r $TOP_DIR/pip-packages /var/www/
+cp -r $TOP_DIR/deb-packages /var/www/
 
 mkdir /etc/puppet/files
 
@@ -116,6 +124,16 @@ echo "$IPADDR  $(hostname)" >> /etc/hosts
 
 IPADDR=\$(ifconfig \$IFACE | grep 'inet addr' | awk '{print \$2}' | awk -F: '{print \$2}')
 echo "\$IPADDR  \$(hostname)" >> /etc/hosts
+echo "deb http://mirrors.163.com/ubuntu/ precise main universe restricted multiverse
+deb-src http://mirrors.163.com/ubuntu/ precise main universe restricted multiverse
+deb http://mirrors.163.com/ubuntu/ precise-security universe main multiverse restricted
+deb-src http://mirrors.163.com/ubuntu/ precise-security universe main multiverse restricted
+deb http://mirrors.163.com/ubuntu/ precise-updates universe main multiverse restricted
+deb http://mirrors.163.com/ubuntu/ precise-proposed universe main multiverse restricted
+deb-src http://mirrors.163.com/ubuntu/ precise-proposed universe main multiverse restricted
+deb http://mirrors.163.com/ubuntu/ precise-backports universe main multiverse restricted
+deb-src http://mirrors.163.com/ubuntu/ precise-backports universe main multiverse restricted
+deb-src http://mirrors.163.com/ubuntu/ precise-updates universe main multiverse restricted" > /etc/apt/sources.list
 
 apt-get update
 apt-get -y install ruby libshadow-ruby1.8 puppet facter --force-yes
@@ -124,6 +142,7 @@ apt-get -y install puppet
 sed -i 's/no/yes/g' /etc/default/puppet
 echo "[main]
 server=$(hostname)
+[agent]
 runinterval=$AGENT_UP_TIME" >> /etc/puppet/puppet.conf
 /etc/init.d/puppet restart
 _GEEK_
