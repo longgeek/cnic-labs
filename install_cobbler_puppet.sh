@@ -1,13 +1,13 @@
 #!/bin/bash 
 
 #--------------------------------- Cobbler -------------------------------------
-#apt-get update || exit 0
+apt-get update || exit 0
 
 # 一些基本的变量
 TOP_DIR=$(cd $(dirname "$0") && pwd)
 COBBLER_WEB_PORT=12001
 IFACE=eth0
-ROOT_PASSWD="111111"
+ROOT_PASSWD="eccp"
 IPADDR=$(ifconfig $IFACE | awk '/inet addr/ {print $2}' | awk -F: '{print $2}')
 GATEWAY=$(route -n | grep $IFACE | grep ^0.0.0.0 | awk '{print $2}')
 CHECK_HOSTNAME=$(hostname | awk -F. '{print $3}')
@@ -35,7 +35,7 @@ COBBLER_PATH='/etc/cobbler/settings'
 sed -i '/^manage_dhcp:.*$/ s/0/1/g' $COBBLER_PATH
 sed -i '/^manage_dns:.*$/ s/0/1/g' $COBBLER_PATH
 sed -i '/^manage_rsync:.*$/ s/0/1/g' $COBBLER_PATH
-sed -i 's/= manage_dhcp/= manage_dnsmasq/g' /etc/cobbler/modules.conf
+sed -i 's/= manage_bind/= manage_dnsmasq/g' /etc/cobbler/modules.conf
 sed -i 's/= manage_isc/= manage_dnsmasq/g' /etc/cobbler/modules.conf
 grep $COBBLER_WEB_PORT /etc/apache2/ports.conf || sed -i "s/Listen 80/Listen 80\nListen $COBBLER_WEB_PORT/g" /etc/apache2/ports.conf
 grep $COBBLER_WEB_PORT $COBBLER_PATH || sed -i "/http_port: .*$/ s/80/$COBBLER_WEB_PORT/g" $COBBLER_PATH
@@ -84,8 +84,8 @@ cobbler profile edit --name=$ISO_TYPE-x86_64 \
 echo "cobbler:Cobbler:a2d6bae81669d707b72c0bd9806e01f3" > /etc/cobbler/users.digest
 
 /etc/init.d/cobbler restart
-sleep 3
-cobbler sync || exit 0
+sleep 5
+cobbler sync || sleep 5 && cobbler sync
 
 
 #--------------------------------- Puppet -------------------------------------
@@ -94,6 +94,7 @@ echo "$IPADDR  $(hostname)" >> /etc/hosts
 
 ## 配置 Puppet
 apt-get -y --force-yes install puppetmaster || exit 1
+cp -r $TOP_DIR/puppet/* /etc/puppet/
 
 mkdir /etc/puppet/files
 
