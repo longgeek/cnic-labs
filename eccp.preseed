@@ -62,7 +62,7 @@ d-i     mirror/http/hostname string mirrors.163.com
 d-i     mirror/http/directory string /ubuntu
 d-i     apt-setup/security_host string mirrors.163.com
 d-i     apt-setup/security_path string /ubuntu
-d-i     mirror/http/proxy string http://@@server@@:3128/
+#d-i     mirror/http/proxy string http://@@server@@:3128/
 
 d-i     debian-installer/allow_unauthenticated string false
 
