@@ -62,7 +62,7 @@ cat > /etc/cobbler/dnsmasq.template << _GEEK_
 read-ethers
 addn-hosts = /var/lib/cobbler/cobbler_hosts
 domain=$(hostname | awk -F. '{print $2"."$3}')
-
+interface=$IFACE
 dhcp-range=$(echo $IPADDR | awk -F. '{print $1"."$2"."$3}').10,$(echo $IPADDR | awk -F. '{print $1"."$2"."$3}').10
 dhcp-option=3,\$next_server
 dhcp-lease-max=1000
