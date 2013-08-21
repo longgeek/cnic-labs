@@ -1,7 +1,6 @@
 #!/bin/bash 
 
 #--------------------------------- Cobbler -------------------------------------
-apt-get update || exit 0
 
 # 一些基本的变量
 TOP_DIR=$(cd $(dirname "$0") && pwd)
@@ -15,6 +14,12 @@ ZONENAME=$(hostname | awk -F . '{print $2"."$3}')
 LS_ISO=$(file /opt/*.iso | grep 'Ubuntu-Server 1[2,3]' | head -n1)
 ISO_NAME=$(echo $LS_ISO | awk -F: '{print $1}')
 ISO_TYPE=$(echo $LS_ISO | awk -F"'" '{print $2}' | awk '{print $1"-"$2}')
+
+mkdir /var/www/
+cp -r $TOP_DIR/pip-packages /var/www/
+cp -r $TOP_DIR/deb-packages /var/www/
+echo "deb file:///var/www/ deb-packages/" > /etc/apt/sources.list
+apt-get update || exit 0
 
 ### Puppet 需要的变量
 COBBLER_PRESEED="/var/lib/cobbler/kickstarts/eccp.preseed"
@@ -43,9 +48,9 @@ grep $COBBLER_WEB_PORT $COBBLER_PATH || sed -i "/http_port: .*$/ s/80/$COBBLER_W
 cp $TOP_DIR/eccp.preseed $COBBLER_PRESEED
 sed -i "s/changeme/$ROOT_PASSWD/g" $COBBLER_PRESEED
 sed -i "s/hostname string.*$/hostname string $IPADDR/g" $COBBLER_PRESEED
-sed -i "s/directory string.*$/\/cobbler\/ks_mirror\/$ISO_TYPE/g" $COBBLER_PRESEED
-sed -i "s/security_host string.*$/security_host string $IPADDR $IPADDR/g" $COBBLER_PRESEED
-sed -i "s/security_path string.*$/\/cobbler\/ks_mirror\/$ISO_TYPE/g" $COBBLER_PRESEED
+sed -i "s/directory string.*$/directory string \/cobbler\/ks_mirror\/$ISO_TYPE/g" $COBBLER_PRESEED
+sed -i "s/security_host string.*$/security_host string $IPADDR/g" $COBBLER_PRESEED
+sed -i "s/security_path string.*$/security_path string \/cobbler\/ks_mirror\/$ISO_TYPE/g" $COBBLER_PRESEED
 
 ## DNSmasq 模版设置
 cat > /etc/cobbler/dnsmasq.template << _GEEK_
@@ -101,8 +106,6 @@ apt-get -y --force-yes install puppetmaster || exit 1
 sed -i "s/my_ip/$IPADDR\/pip-packages/g" $TOP_DIR/puppet/modules/all_sources/templates/pip.conf.erb
 sed -i "s/my_ip/$IPADDR\/pip-packages/g" $TOP_DIR/puppet/modules/all_sources/templates/pydistutils.cfg.erb
 cp -r $TOP_DIR/puppet/* /etc/puppet/
-cp -r $TOP_DIR/pip-packages /var/www/
-cp -r $TOP_DIR/deb-packages /var/www/
 
 mkdir /etc/puppet/files
 
@@ -124,16 +127,17 @@ echo "$IPADDR  $(hostname)" >> /etc/hosts
 
 IPADDR=\$(ifconfig \$IFACE | grep 'inet addr' | awk '{print \$2}' | awk -F: '{print \$2}')
 echo "\$IPADDR  \$(hostname)" >> /etc/hosts
-echo "deb http://mirrors.163.com/ubuntu/ precise main universe restricted multiverse
-deb-src http://mirrors.163.com/ubuntu/ precise main universe restricted multiverse
-deb http://mirrors.163.com/ubuntu/ precise-security universe main multiverse restricted
-deb-src http://mirrors.163.com/ubuntu/ precise-security universe main multiverse restricted
-deb http://mirrors.163.com/ubuntu/ precise-updates universe main multiverse restricted
-deb http://mirrors.163.com/ubuntu/ precise-proposed universe main multiverse restricted
-deb-src http://mirrors.163.com/ubuntu/ precise-proposed universe main multiverse restricted
-deb http://mirrors.163.com/ubuntu/ precise-backports universe main multiverse restricted
-deb-src http://mirrors.163.com/ubuntu/ precise-backports universe main multiverse restricted
-deb-src http://mirrors.163.com/ubuntu/ precise-updates universe main multiverse restricted" > /etc/apt/sources.list
+echo "deb http://$IPADDR/ pip-packages/
+#deb http://mirrors.163.com/ubuntu/ precise main universe restricted multiverse
+#deb-src http://mirrors.163.com/ubuntu/ precise main universe restricted multiverse
+#deb http://mirrors.163.com/ubuntu/ precise-security universe main multiverse restricted
+#deb-src http://mirrors.163.com/ubuntu/ precise-security universe main multiverse restricted
+#deb http://mirrors.163.com/ubuntu/ precise-updates universe main multiverse restricted
+#deb http://mirrors.163.com/ubuntu/ precise-proposed universe main multiverse restricted
+#deb-src http://mirrors.163.com/ubuntu/ precise-proposed universe main multiverse restricted
+#deb http://mirrors.163.com/ubuntu/ precise-backports universe main multiverse restricted
+#deb-src http://mirrors.163.com/ubuntu/ precise-backports universe main multiverse restricted
+#deb-src http://mirrors.163.com/ubuntu/ precise-updates universe main multiverse restricted" > /etc/apt/sources.list
 
 apt-get update
 apt-get -y install ruby libshadow-ruby1.8 puppet facter --force-yes
@@ -144,6 +148,8 @@ echo "[main]
 server=$(hostname)
 [agent]
 runinterval=$AGENT_UP_TIME" >> /etc/puppet/puppet.conf
+sed -i 's/-q -y/-q -y --force-yes/g' /usr/lib/ruby/1.8/puppet/provider/package/apt.rb
+sed -i 's/#net.ipv4.ip_forward=1/net.ipv4.ip_forward=1/g' /etc/sysctl.conf
 /etc/init.d/puppet restart
 _GEEK_
 

@@ -1,31 +1,31 @@
 node 'agent.local.com' {
     Class["all_sources"] -> Class["mysql"] -> Class["rabbitmq"] -> Class["keystone"] -> Class["cinder"] -> Class["nova"] -> Class["glance"] -> Class["horizon"]
-	include all_sources, mysql, rabbitmq, keystone, cinder, nova, glance, horizon
+    include all_sources, mysql, rabbitmq, keystone, cinder, nova, glance, horizon
 }
 
 
 $command_path                       = '/usr/local/sbin:/usr/local/bin:/sbin:/bin:/usr/sbin:/usr/bin:/root/bin:/bin/bash'
 $source_dir                         = '/opt/stack'
-$source_apt_requires	            = ["build-essential", "python-dev", "python-setuptools", "python-pip", "libxml2-dev", "libxslt1-dev", "git"]
+$source_apt_requires                = ["build-essential", "python-dev", "python-setuptools", "python-pip", "libxml2-dev", "libxslt1-dev", "git", "python-numpy"]
 ## MYSQL
 $mysql_host                         = '127.0.0.1'
 $mysql_root_password                = 'csdb123cnic'
 
 ## KEYSTONE
 $keystone_host                      = '192.168.99.120'
-$keystone_source_pack_name	        = 'keystone.tar.gz'
-$keystone_client_source_pack_name	= 'python-keystoneclient.tar.gz'
-$admin_token					    = 'admin'
+$keystone_source_pack_name          = 'keystone.tar.gz'
+$keystone_client_source_pack_name   = 'python-keystoneclient.tar.gz'
+$admin_token                        = 'admin'
 $admin_password                     = 'password'
 $service_password                   = 'password'
 $service_tenant_name                = 'service'
 $keystone_region                    = 'RegionOne'
 $email_domain                       = 'cnic.cn'
-$keystone_log_verbose			    = 'True'
-$keystone_log_debug				    = 'False'
-$keystone_db_user				    = 'keystone'
-$keystone_db_name				    = 'keystone'
-$keystone_db_password			    = 'keystone'
+$keystone_log_verbose               = 'True'
+$keystone_log_debug                 = 'False'
+$keystone_db_user                   = 'keystone'
+$keystone_db_name                   = 'keystone'
+$keystone_db_password               = 'keystone'
 $keystone_logger_level              = 'DEBUG'
 $keystone_logger_handlers           = 'devel,production'
 
