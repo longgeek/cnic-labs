@@ -8,16 +8,12 @@ COBBLER_WEB_PORT=12001
 IFACE=eth0
 ROOT_PASSWD="eccp"
 IPADDR=$(ifconfig $IFACE | awk '/inet addr/ {print $2}' | awk -F: '{print $2}')
-GATEWAY=$(route -n | grep $IFACE | grep ^0.0.0.0 | awk '{print $2}')
+GATEWAY=$(route -n | grep ^0.0.0.0 | awk '{print $2}')
 CHECK_HOSTNAME=$(hostname | awk -F. '{print $3}')
 ZONENAME=$(hostname | awk -F . '{print $2"."$3}')
 LS_ISO=$(file /opt/*.iso | grep 'Ubuntu-Server 1[2,3]' | head -n1)
 ISO_NAME=$(echo $LS_ISO | awk -F: '{print $1}')
 ISO_TYPE=$(echo $LS_ISO | awk -F"'" '{print $2}' | awk '{print $1"-"$2}')
-
-[ ! -e /var/www/ ] && echo "Copy file ing......" && mkdir /var/www/ && cp -r $TOP_DIR/pip-packages /var/www/ && cp -r $TOP_DIR/deb-packages /var/www/
-echo "deb file:///var/www/ deb-packages/" > /etc/apt/sources.list
-apt-get update || exit 0
 
 ### Puppet 需要的变量
 COBBLER_PRESEED="/var/lib/cobbler/kickstarts/eccp.preseed"
@@ -30,6 +26,11 @@ then
     exit 0
 fi
 
+## deb 本地源、Pypi 本地源
+[ ! -e /var/www/ ] && echo "Copy file ing......" && mkdir /var/www/ && cp -r $TOP_DIR/pip-packages /var/www/ && cp -r $TOP_DIR/deb-packages /var/www/
+echo "deb file:///var/www/ deb-packages/" > /etc/apt/sources.list
+apt-get update || exit 0
+
 ## 安装相关软件包
 apt-get -y --force-yes install cobbler cobbler-web dnsmasq debmirror ntp || exit 0
 
@@ -38,6 +39,8 @@ COBBLER_PATH='/etc/cobbler/settings'
 sed -i '/^manage_dhcp:.*$/ s/0/1/g' $COBBLER_PATH
 sed -i '/^manage_dns:.*$/ s/0/1/g' $COBBLER_PATH
 sed -i '/^manage_rsync:.*$/ s/0/1/g' $COBBLER_PATH
+sed -i "s/^next_server:.*$/next_server: $IPADDR/g" $COBBLER_PATH
+sed -i "s/^server:.*$/server: $IPADDR/g" $COBBLER_PATH
 sed -i 's/= manage_bind/= manage_dnsmasq/g' /etc/cobbler/modules.conf
 sed -i 's/= manage_isc/= manage_dnsmasq/g' /etc/cobbler/modules.conf
 grep $COBBLER_WEB_PORT /etc/apache2/ports.conf || sed -i "s/Listen 80/Listen 80\nListen $COBBLER_WEB_PORT/g" /etc/apache2/ports.conf
@@ -49,6 +52,12 @@ sed -i "s/hostname string.*$/hostname string $IPADDR/g" $COBBLER_PRESEED
 sed -i "s/directory string.*$/directory string \/cobbler\/ks_mirror\/$ISO_TYPE/g" $COBBLER_PRESEED
 sed -i "s/security_host string.*$/security_host string $IPADDR/g" $COBBLER_PRESEED
 sed -i "s/security_path string.*$/security_path string \/cobbler\/ks_mirror\/$ISO_TYPE/g" $COBBLER_PRESEED
+
+echo "server $IPADDR
+server 127.127.1.0
+fudge 127.127.1.0 stratum 10" >> /etc/ntp.conf
+cp /usr/share/zoneinfo/Asia/Shanghai /etc/localtime
+/etc/init.d/ntp restart
 
 ## DNSmasq 模版设置
 cat > /etc/cobbler/dnsmasq.template << _GEEK_
@@ -63,14 +72,13 @@ read-ethers
 addn-hosts = /var/lib/cobbler/cobbler_hosts
 domain=$(hostname | awk -F. '{print $2"."$3}')
 interface=$IFACE
-dhcp-range=$(echo $IPADDR | awk -F. '{print $1"."$2"."$3}').10,$(echo $IPADDR | awk -F. '{print $1"."$2"."$3}').10
-dhcp-option=3,\$next_server
+dhcp-range=$(echo $IPADDR | awk -F. '{print $1"."$2"."$3}').0,static
+dhcp-option=3,$GATEWAY,$IPADDR
 dhcp-lease-max=1000
 dhcp-authoritative
 dhcp-boot=pxelinux.0
 dhcp-boot=net:normalarch,pxelinux.0
 dhcp-boot=net:ia64,\$elilo
-dhcp-hostsfile=/etc/dnsmasq.d/hosts.conf
 
 \$insert_cobbler_system_definitions
 _GEEK_
@@ -106,8 +114,6 @@ sed -i "s/my_ip/$IPADDR\/pip-packages/g" $TOP_DIR/puppet/modules/all_sources/tem
 sed -i "s/my_ip/$IPADDR\/pip-packages/g" $TOP_DIR/puppet/modules/all_sources/templates/pydistutils.cfg.erb
 cp -r $TOP_DIR/puppet/* /etc/puppet/
 
-mkdir /etc/puppet/files
-
 cat > /etc/puppet/autosign.conf << _GEEK_
 `hostname`
 *.$(hostname | awk -F. '{print $2"."$3}')
@@ -126,7 +132,7 @@ echo "$IPADDR  $(hostname)" >> /etc/hosts
 
 IPADDR=\$(ifconfig \$IFACE | grep 'inet addr' | awk '{print \$2}' | awk -F: '{print \$2}')
 echo "\$IPADDR  \$(hostname)" >> /etc/hosts
-echo "deb http://$IPADDR/ pip-packages/
+echo "deb http://$IPADDR/ deb-packages/
 #deb http://mirrors.163.com/ubuntu/ precise main universe restricted multiverse
 #deb-src http://mirrors.163.com/ubuntu/ precise main universe restricted multiverse
 #deb http://mirrors.163.com/ubuntu/ precise-security universe main multiverse restricted
@@ -149,6 +155,14 @@ server=$(hostname)
 runinterval=$AGENT_UP_TIME" >> /etc/puppet/puppet.conf
 sed -i 's/-q -y/-q -y --force-yes/g' /usr/lib/ruby/1.8/puppet/provider/package/apt.rb
 sed -i 's/#net.ipv4.ip_forward=1/net.ipv4.ip_forward=1/g' /etc/sysctl.conf
+sed -i 's/server 0.ubuntu.pool.ntp.org//g' /etc/ntp.conf                                                                                               
+sed -i 's/server 1.ubuntu.pool.ntp.org//g' /etc/ntp.conf                                                                                               
+sed -i 's/server 2.ubuntu.pool.ntp.org//g' /etc/ntp.conf                                                                                               
+sed -i 's/server 3.ubuntu.pool.ntp.org//g' /etc/ntp.conf                                                                                               
+sed -i "s/server ntp.ubuntu.com/server $IPADDR/g" /etc/ntp.conf
+/etc/init.d/ntp stop                                                                                                                                   
+ntpdate $IPADDR
+/etc/init.d/ntp restart
 /etc/init.d/puppet restart
 _GEEK_
 
