@@ -15,9 +15,7 @@ LS_ISO=$(file /opt/*.iso | grep 'Ubuntu-Server 1[2,3]' | head -n1)
 ISO_NAME=$(echo $LS_ISO | awk -F: '{print $1}')
 ISO_TYPE=$(echo $LS_ISO | awk -F"'" '{print $2}' | awk '{print $1"-"$2}')
 
-mkdir /var/www/
-cp -r $TOP_DIR/pip-packages /var/www/
-cp -r $TOP_DIR/deb-packages /var/www/
+[ ! -e /var/www/ ] && echo "Copy file ing......" && mkdir /var/www/ && cp -r $TOP_DIR/pip-packages /var/www/ && cp -r $TOP_DIR/deb-packages /var/www/
 echo "deb file:///var/www/ deb-packages/" > /etc/apt/sources.list
 apt-get update || exit 0
 
@@ -65,20 +63,21 @@ read-ethers
 addn-hosts = /var/lib/cobbler/cobbler_hosts
 domain=$(hostname | awk -F. '{print $2"."$3}')
 
-#dhcp-range=192.168.99.5,192.168.99.200
+dhcp-range=$(echo $IPADDR | awk -F. '{print $1"."$2"."$3}').10,$(echo $IPADDR | awk -F. '{print $1"."$2"."$3}').10
 dhcp-option=3,\$next_server
 dhcp-lease-max=1000
 dhcp-authoritative
 dhcp-boot=pxelinux.0
 dhcp-boot=net:normalarch,pxelinux.0
 dhcp-boot=net:ia64,\$elilo
+dhcp-hostsfile=/etc/dnsmasq.d/hosts.conf
 
 \$insert_cobbler_system_definitions
 _GEEK_
 
 ## 挂在 ISO 镜像，并导入
 umount $ISO_NAME
-mkdir /geek
+[ ! -e /geek ] && mkdir /geek
 mount -o loop $ISO_NAME /geek/ || exit 0
 cobbler import --path=/geek --name=$ISO_TYPE
 cobbler distro edit --name=$ISO_TYPE-x86_64 \
