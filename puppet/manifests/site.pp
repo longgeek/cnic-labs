@@ -1,14 +1,13 @@
-node 'agent.local.com' {
+node 'control.local.com' {
     Class["all_sources"] -> Class["mysql"] -> Class["rabbitmq"] -> Class["keystone"] -> Class["cinder"] -> Class["nova"] -> Class["glance"] -> Class["horizon"]
     include all_sources, mysql, rabbitmq, keystone, cinder, nova, glance, horizon
 }
-
 
 $command_path                       = '/usr/local/sbin:/usr/local/bin:/sbin:/bin:/usr/sbin:/usr/bin:/root/bin:/bin/bash'
 $source_dir                         = '/opt/stack'
 $source_apt_requires                = ["build-essential", "python-dev", "python-setuptools", "python-pip", "libxml2-dev", "libxslt1-dev", "git", "python-numpy"]
 ## MYSQL
-$mysql_host                         = '127.0.0.1'
+$mysql_host                         = '192.168.99.120'
 $mysql_root_password                = 'csdb123cnic'
 
 ## KEYSTONE
@@ -82,7 +81,7 @@ $flat_network_bridge                = 'br100'
 $flat_interface                     = 'eth0'
 $fixed_range                        = '10.0.0.0/20'
 $floating_range                     = '192.168.99.32/27'
-$network_size                       = '32'
+$network_size                       = '4096'
 $ec2_dmz_host                       = '192.168.99.120'
 $novncproxy_host                    = '192.168.99.120'
 $xvpvncproxy_host                   = '192.168.99.120'
