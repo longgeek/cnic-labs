@@ -300,8 +300,7 @@ class all_sources {
     }
     
     exec { "untar openstack_auth":
-        command => "tar zxvf openstack_auth.tar.gz; \
-                    /etc/init.d/apache2 restart",
+        command => "tar zxvf openstack_auth.tar.gz",
         path => $command_path,
         cwd => $source_dir,
         refreshonly => true,
