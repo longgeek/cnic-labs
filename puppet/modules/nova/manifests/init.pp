@@ -127,5 +127,12 @@ class nova {
                     /etc/init.d/nova-xvpvncproxy restart",
         path => $command_path,
         refreshonly => true,
+        notify => Exec["create fixed_ips"],
+    }
+
+    exec { "create fixed_ips":
+        command => "nova-manage network create private --fixed_range_v4=${fixed_range} --num_networks=1 --bridge=br100 --bridge_interface=${flat_interface} --network_size=${network_size} && mkdir /etc/nova/.fixed_ips",
+        path => $command_path,
+        creates => "/etc/nova/.fixed_ips",
     }
 }
