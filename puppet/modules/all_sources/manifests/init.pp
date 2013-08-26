@@ -1,5 +1,5 @@
 class all_sources {
-### Base
+    ### Base
     user { ["keystone", "glance", "cinder", "nova", "apache"]:
         ensure => "present",
         shell => "/usr/sbin/nologin",
@@ -281,8 +281,8 @@ class all_sources {
                     cd horizon; \
                     python setup.py egg_info; \
                     pip install -r *.egg-info/requires.txt; \
-                    python setup.py develop", 
-#                    chown -R apache:apache $source_dir/horizon/",
+                    python setup.py develop; \
+                    chown -R apache:apache $source_dir/horizon/",
         path => $command_path,
         cwd => $source_dir,
         refreshonly => true,
@@ -300,7 +300,8 @@ class all_sources {
     }
     
     exec { "untar openstack_auth":
-        command => "tar zxvf openstack_auth.tar.gz",
+        command => "tar zxvf openstack_auth.tar.gz; \
+                    /etc/init.d/apache2 restart",
         path => $command_path,
         cwd => $source_dir,
         refreshonly => true,
