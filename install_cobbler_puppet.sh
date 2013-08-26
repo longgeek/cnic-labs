@@ -73,7 +73,7 @@ addn-hosts = /var/lib/cobbler/cobbler_hosts
 domain=$(hostname | awk -F. '{print $2"."$3}')
 interface=$IFACE
 dhcp-range=$(echo $IPADDR | awk -F. '{print $1"."$2"."$3}').0,static
-dhcp-option=3,$GATEWAY,$IPADDR
+dhcp-option=3,$IPADDR
 dhcp-lease-max=1000
 dhcp-authoritative
 dhcp-boot=pxelinux.0
