@@ -58,18 +58,20 @@ class nova-compute {
         notify => Service["libvirt-bin", "nova-compute", "nova-network"],
     }
 
+    exec { "nova db sync":
+        command => "nova-manage db sync; \
+                    apt-get -y --force-yes install python-mysqldb; \
+                    #/etc/init.d/nova-api restart; \
+                    /etc/init.d/nova-network restart; \
+                    /etc/init.d/nova-compute restart",
+        path => $command_path,
+        refreshonly => true,
+    }
+
     service { ["libvirt-bin", "nova-compute", "nova-network"]:
         ensure => running,
         enable => true,
         hasstatus => true,
         hasrestart => true,
     }
-#    exec { "nova db sync":
-#        command => "nova-manage db sync; \
-#                    #/etc/init.d/nova-api restart; \
-#                    /etc/init.d/nova-network restart; \
-#                    /etc/init.d/nova-compute restart",
-#        path => $command_path,
-#        refreshonly => true,
-#    }
 }
