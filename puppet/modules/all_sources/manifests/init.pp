@@ -64,13 +64,18 @@ class all_sources {
 
     # Un pack & pip requires & install
     exec { "untar keystone":
-        command => "tar zxvf $keystone_source_pack_name; \
+        command => "[ -e $source_dir/keystone ] && \
+                    cd $source_dir/keystone && python setup.py develop -u && \
+                    rm -fr $source_dir/keystone; \
+                    cd $source_dir; \
+                    tar zxvf $keystone_source_pack_name; \
                     cd keystone; \
                     python setup.py egg_info; \
                     pip install -r *.egg-info/requires.txt; \
                     python setup.py develop; \
                     cp etc/default_catalog.templates /etc/keystone/; \
                     cp etc/policy.json /etc/keystone/; \
+                    [ -e /etc/init.d/keystone ] && /etc/init.d/keystone restart; \
                     chown -R keystone:root /etc/keystone/",
         path => $command_path,
         cwd => $source_dir,
@@ -85,11 +90,17 @@ class all_sources {
     }   
 
     exec { "untar keystone-client":
-        command => "tar zxvf $keystone_client_source_pack_name; \
+        command => "[ -e $source_dir/python-keystoneclient ] && \
+                    cd $source_dir/python-keystoneclient && \
+                    python setup.py develop -u && rm -fr $source_dir/python-keystoneclient; \
+                    cd $source_dir; \
+                    tar zxvf $keystone_client_source_pack_name; \
                     cd python-keystoneclient; \
                     python setup.py egg_info; \
                     pip install -r *.egg-info/requires.txt; \
-                    python setup.py develop",
+                    python setup.py develop; \
+                    [ -e /etc/init.d/keystone ] && /etc/init.d/keystone restart; \
+                    echo 'restart service'",
         path => $command_path,
         cwd => $source_dir,
         refreshonly => true,
@@ -109,7 +120,10 @@ class all_sources {
     }
 
     exec { "untar glance":
-        command => "tar zxvf $glance_source_pack_name; \
+        command => "[ -e $source_dir/glance ] && cd $source_dir/glance && \
+                    python setup.py develop -u && rm -fr $source_dir/glance && \
+                    cd $source_dir; \
+                    tar zxvf $glance_source_pack_name; \
                     cd glance; \
                     python setup.py egg_info; \
                     pip install -r *.egg-info/requires.txt; \
@@ -118,6 +132,8 @@ class all_sources {
                     cp etc/schema-image.json /etc/glance/; \
                     cp etc/glance-registry-paste.ini /etc/glance/; \
                     cp etc/policy.json /etc/glance/; \
+                    [ -e /etc/init.d/glance-api ] && /etc/init.d/glance-api restart; \
+                    /etc/init.d/glance-registry restart; \
                     chown -R glance:root /etc/glance/",
         cwd => $source_dir,
         path => $command_path,
@@ -131,11 +147,17 @@ class all_sources {
     }
 
     exec { "untar glance-client":
-        command => "tar zxvf $glance_client_source_pack_name; \
+        command => "[ -e $source_dir/python-glanceclient ] && cd $source_dir/python-glanceclient && \
+                    python setup.py develop -u && rm -fr $source_dir/python-glanceclient && \
+                    cd $source_dir; \
+                    tar zxvf $glance_client_source_pack_name; \
                     cd python-glanceclient; \
                     python setup.py egg_info; \
                     pip install -r *.egg-info/requires.txt; \
-                    python setup.py develop",
+                    python setup.py develop; \
+                    [ -e /etc/init.d/glance-api ] && /etc/init.d/glance-api restart && \
+                    /etc/init.d/glance-registry restart; \
+                    echo 'restart service'",
         path => $command_path,
         cwd => $source_dir,
         refreshonly => true,
@@ -143,7 +165,6 @@ class all_sources {
     }   
 
 ### Cinder
-
     file { ["/etc/cinder", "/var/lib/cinder", "/var/log/cinder/", "/var/run/cinder", "/var/lib/cinder/images"]:
         ensure => directory,
         owner => "cinder",
@@ -156,7 +177,10 @@ class all_sources {
     }   
 
     exec { "untar cinder":
-        command => "tar zxvf $cinder_source_pack_name; \
+        command => "[ -e $source_dir/cinder ] && cd $source_dir/cinder && \
+                    python setup.py develop -u && rm -fr $source_dir/cinder; \
+                    cd $source_dir; \
+                    tar zxvf $cinder_source_pack_name; \
                     cd cinder; \
                     python setup.py egg_info; \
                     pip install -r *.egg-info/requires.txt; \
@@ -164,6 +188,9 @@ class all_sources {
                     cp etc/cinder/policy.json /etc/cinder/; \
                     cp etc/cinder/rootwrap.conf /etc/cinder; \
                     cp -r etc/cinder/rootwrap.d/ /etc/cinder; \
+                    [ -e /etc/init.d/cinder-api ] && /etc/init.d/cinder-api restart && \
+                    /etc/init.d/cinder-scheduler restart && \
+                    /etc/init.d/cinder-volume restart; \
                     chown -R cinder:root /etc/cinder",
         cwd => $source_dir,
         path => $command_path,
@@ -177,11 +204,18 @@ class all_sources {
     }   
 
     exec { "untar cinder-client":
-        command => "tar zxvf $cinder_client_source_pack_name; \
+        command => "[ -e $source_dir/python-cinderclient ] && cd $source_dir/python-cinderclient && \
+                    python setup.py develop -u && rm -fr $source_dir/python-cinderclient && \ 
+                    cd $source_dir; \
+                    tar zxvf $cinder_client_source_pack_name; \
                     cd python-cinderclient; \
                     python setup.py egg_info; \
                     pip install -r *.egg-info/requires.txt; \
-                    python setup.py develop",
+                    python setup.py develop; \
+                    [ -e /etc/init.d/cinder-api ] && /etc/init.d/cinder-api restart && \
+                    /etc/init.d/cinder-scheduler restart && \
+                    /etc/init.d/cinder-volume restart; \
+                    echo 'restart service'",
         cwd => $source_dir,
         path => $command_path,
         refreshonly => true,
@@ -203,14 +237,32 @@ class all_sources {
     }
 
     exec { "untar nova":
-        command => "tar zxvf $nova_source_pack_name; \
+        command => "[ -e $source_dir/nova ] && \
+                    cd $source_dir/nova && \
+                    python setup.py develop -u && cd $source_dir && rm -fr $source_dir/nova && \
+                    cd $source_dir; \
+                    tar zxvf $nova_source_pack_name; \
                     cd nova; \
                     python setup.py egg_info; \
                     pip install -r *.egg-info/requires.txt; \
                     python setup.py develop; \
                     cp -r etc/nova/rootwrap.d /etc/nova/; \
                     cp etc/nova/policy.json /etc/nova/; \
-                    chown -R nova:root /etc/nova/",
+                    chown -R nova:root /etc/nova/; \
+                    [ -e /etc/init.d/nova-api ] && /etc/init.d/nova-api restart; \
+                    echo 'restart services'; \
+                    [ -e /etc/init.d/nova-compute ] && /etc/init.d/nova-compute restart; \
+                    echo 'restart services'; \
+                    [ -e /etc/init.d/nova-network ] && /etc/init.d/nova-network restart; \
+                    echo 'restart services'; \
+                    [ -e /etc/init.d/nova-scheduler ] && /etc/init.d/nova-scheduler restart; \
+                    echo 'restart services'; \
+                    [ -e /etc/init.d/nova-novncproxy ] && /etc/init.d/nova-novncproxy restart; \
+                    echo 'restart services'; \
+                    [ -e /etc/init.d/nova-consoleauth ] && /etc/init.d/nova-consoleauth restart; \
+                    echo 'restart services'; \
+                    [ -e /etc/init.d/nova-cert ] && /etc/init.d/nova-cert restart; \
+                    echo 'restart services'",
         path => $command_path,
         cwd => $source_dir,
         refreshonly => true,
@@ -224,11 +276,28 @@ class all_sources {
     }
 
     exec { "untar nova-client":
-        command => "tar zxvf $nova_client_source_pack_name; \
+        command => "[ -e $source_dir/python-novaclient ] && cd $source_dir/python-novaclient && \
+                    python setup.py develop -u && rm -fr $source_dir/python-novaclient; \
+                    cd $source_dir; \
+                    tar zxvf $nova_client_source_pack_name; \
                     cd python-novaclient; \
                     python setup.py egg_info; \
                     pip install -r tools/pip-requires; \
-                    python setup.py develop",
+                    python setup.py develop; \
+                    [ -e /etc/init.d/nova-api ] && /etc/init.d/nova-api restart; \
+                    echo 'restart services'; \
+                    [ -e /etc/init.d/nova-compute ] && /etc/init.d/nova-compute restart; \
+                    echo 'restart services'; \
+                    [ -e /etc/init.d/nova-network ] && /etc/init.d/nova-network restart; \
+                    echo 'restart services'; \
+                    [ -e /etc/init.d/nova-cert ] && /etc/init.d/nova-cert restart; \
+                    echo 'restart services'; \
+                    [ -e /etc/init.d/nova-scheduler ] && /etc/init.d/nova-scheduler restart; \
+                    echo 'restart services'; \
+                    [ -e /etc/init.d/nova-novncproxy ] && /etc/init.d/nova-novncproxy restart; \
+                    echo 'restart services'; \
+                    [ -e /etc/init.d/nova-consoleauth ] && /etc/init.d/nova-consoleauth restart; \
+                    echo 'restart services'",
         path => $command_path,
         cwd => $source_dir,
         refreshonly => true,
@@ -244,7 +313,9 @@ class all_sources {
     exec { "untar noVNC":
         command => "tar zxvf $nova_novnc_source_pack_name; \
                     rm -fr /usr/share/novnc; \
-                    mv noVNC /usr/share/novnc",
+                    mv noVNC /usr/share/novnc; \
+                    [ -e /etc/init.d/nova-novncproxy ] && /etc/init.d/nova-novncproxy restart; \
+                    echo 'restart services'",
         path => $command_path,
         cwd => $source_dir,
         refreshonly => true,
@@ -258,7 +329,10 @@ class all_sources {
     }
 
     exec { "untar websockify":
-        command => "tar zxvf websockify.tar.gz; \
+        command => "[ -e $source_dir/websockify ] && cd $source_dir/websockify && \
+                    python setup.py develop -u && rm -fr $source_dir/websockify && \
+                    cd $source_dir; \
+                    tar zxvf websockify.tar.gz; \
                     cd websockify; \
                     python setup.py egg_info; \
                     pip install -r *.egg-info/requires.txt; \
@@ -277,11 +351,17 @@ class all_sources {
     }
     
     exec { "untar horizon":
-        command => "tar zxvf $horizon_source_pack_name; \
+        command => "[ -e $source_dir/horizon ] && cd $source_dir/horizon && \
+                    python setup.py develop -u && rm -fr $source_dir/horizon; \
+                    cd $source_dir; \
+                    tar zxvf $horizon_source_pack_name; \
                     cd horizon; \
                     python setup.py egg_info; \
                     pip install -r *.egg-info/requires.txt; \
                     python setup.py develop; \
+                    [ -e /etc/init.d/apache2 ] && /etc/init.d/apache2 restart; \
+                    echo 'restart services'; \
+                    [ -e /var/lib/mysql/$horizon_db_name ] && python $source_dir/horizon/manage.py syncdb --noinput; \
                     chown -R apache:apache $source_dir/horizon/",
         path => $command_path,
         cwd => $source_dir,
@@ -300,7 +380,8 @@ class all_sources {
     }
     
     exec { "untar openstack_auth":
-        command => "tar zxvf openstack_auth.tar.gz",
+        command => "[ -e $source_dir/openstack_auth ] && rm -fr $source_dir/openstack_auth;\
+                    tar zxvf openstack_auth.tar.gz",
         path => $command_path,
         cwd => $source_dir,
         refreshonly => true,
