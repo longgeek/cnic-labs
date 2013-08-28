@@ -1,6 +1,14 @@
-node 'control.local.com' {
-    Class["all_sources"] -> Class["mysql"] -> Class["rabbitmq"] -> Class["keystone"] -> Class["cinder"] -> Class["nova"] -> Class["glance"] -> Class["horizon"]
-    include all_sources, mysql, rabbitmq, keystone, cinder, nova, glance, horizon
+node default {
+    include all_sources
+}
+
+node 'control.local.com' inherits default {
+    Class["mysql"] -> Class["rabbitmq"] -> Class["keystone"] -> Class["cinder"] -> Class["nova"] -> Class["glance"] -> Class["horizon"]
+    include mysql, rabbitmq, keystone, cinder, nova, glance, horizon
+}
+
+node 'compute.local.com' inherits default {
+    include nova-compute
 }
 
 $command_path                       = '/usr/local/sbin:/usr/local/bin:/sbin:/bin:/usr/sbin:/usr/bin:/root/bin:/bin/bash'
