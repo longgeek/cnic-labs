@@ -1,3 +1,6 @@
+IPADDR=$(ifconfig eth0 | grep 'inet addr' | awk -F: '{print $2}' | awk '{print $1}')
+
+cat > /etc/nova/nova.conf << _GEEK_
 [DEFAULT]
 verbose = <%= nova_log_verbose %>
 debug = <%= nova_log_debug %>
@@ -52,7 +55,7 @@ flat_interface = <%= flat_interface %>
 novncproxy_base_url = http://<%= novncproxy_host %>:6080/vnc_auto.html
 xvpvncproxy_base_url = http://<%= xvpvncproxy_host %>:6081/console
 vncserver_listen = 0.0.0.0
-vncserver_proxyclient_address = <%= vncserver_proxyclient_address %>
+vncserver_proxyclient_address = $IPADDR
 ec2_dmz_host = <%= ec2_dmz_host %>
 rabbit_host = <%= rabbit_host %>
 rabbit_password = <%= rabbit_password %>
@@ -62,3 +65,5 @@ firewall_driver = nova.virt.libvirt.firewall.IptablesFirewallDriver
 scheduler_host_manager = nova.scheduler.baremetal_host_manager.BaremetalHostManager
 notification_topics = notifications
 notification_driver = nova.openstack.common.notifier.rabbit_notifier
+_GEEK_
+chown nova:nova /etc/nova/nova.conf
