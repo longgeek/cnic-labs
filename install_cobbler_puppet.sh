@@ -131,7 +131,7 @@ IFACE="eth0"
 echo "$IPADDR  $(hostname)" >> /etc/hosts
 
 IPADDR=\$(ifconfig \$IFACE | grep 'inet addr' | awk '{print \$2}' | awk -F: '{print \$2}')
-echo "\$IPADDR  \$(hostname)" >> /etc/hosts
+echo "\$IPADDR  \$(hostname -f) \$(hostname)" >> /etc/hosts
 echo "deb http://$IPADDR/ deb-packages/
 #deb http://mirrors.163.com/ubuntu/ precise main universe restricted multiverse
 #deb-src http://mirrors.163.com/ubuntu/ precise main universe restricted multiverse
