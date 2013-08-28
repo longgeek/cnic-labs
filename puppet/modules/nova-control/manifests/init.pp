@@ -97,21 +97,21 @@ class nova-control {
 
     # config
     file { "/etc/nova/nova.conf":
-        content => template("nova/nova.conf.erb"),
+        content => template("nova-control/nova.conf.erb"),
         owner => "nova",
         group => "nova",
         notify => Exec["nova db sync"],
     }
 
     file { "/etc/nova/api-paste.ini":
-        content => template("nova/api-paste.ini.erb"),
+        content => template("nova-control/api-paste.ini.erb"),
         owner => "nova",
         group => "nova",
         notify => Exec["nova db sync"],
     }
 
     file { "/etc/nova/rootwrap.conf":
-        content => template("nova/rootwrap.conf.erb"),
+        content => template("nova-control/rootwrap.conf.erb"),
         owner => "nova",
         group => "nova",
         notify => Exec["nova db sync"],

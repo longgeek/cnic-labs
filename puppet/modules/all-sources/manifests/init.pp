@@ -38,13 +38,13 @@ class all-sources {
     }
 
     file { "/root/.pip/pip.conf":
-        content => template("all_sources/pip.conf.erb"),
+        content => template("all-sources/pip.conf.erb"),
         require => File["/etc/sudoers.d/cinder-rootwrap"],
         notify => File["/root/.pydistutils.cfg"],
     }   
 
     file { "/root/.pydistutils.cfg":
-        content => template("all_sources/pydistutils.cfg.erb"),
+        content => template("all-sources/pydistutils.cfg.erb"),
         notify => File["/etc/keystone", "/var/log/keystone", "/var/lib/keystone", "/var/run/keystone"],
     }
 

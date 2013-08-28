@@ -4,7 +4,7 @@ node default {
 
 node 'control.local.com' inherits default {
     Class["all-sources"] -> Class["mysql"] -> Class["rabbitmq"] -> Class["keystone"] -> Class["cinder"] -> Class["nova-control"] -> Class["glance"] -> Class["horizon"]
-    include mysql, rabbitmq, keystone, cinder, nova, glance, horizon
+    include mysql, rabbitmq, keystone, cinder, nova-control, glance, horizon
 }
 
 node 'compute.local.com' inherits default {
