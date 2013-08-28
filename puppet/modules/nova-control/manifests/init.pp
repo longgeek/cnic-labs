@@ -1,4 +1,4 @@
-class nova {
+class nova-control {
 
     file { 
         "/etc/init.d/nova-api":
@@ -99,18 +99,21 @@ class nova {
     file { "/etc/nova/nova.conf":
         content => template("nova/nova.conf.erb"),
         owner => "nova",
+        group => "nova",
         notify => Exec["nova db sync"],
     }
 
     file { "/etc/nova/api-paste.ini":
         content => template("nova/api-paste.ini.erb"),
         owner => "nova",
+        group => "nova",
         notify => Exec["nova db sync"],
     }
 
     file { "/etc/nova/rootwrap.conf":
         content => template("nova/rootwrap.conf.erb"),
         owner => "nova",
+        group => "nova",
         notify => Exec["nova db sync"],
     }
 

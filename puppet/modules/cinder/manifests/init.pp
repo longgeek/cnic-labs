@@ -61,12 +61,14 @@ class cinder {
     file { "/etc/cinder/cinder.conf":
         content => template("cinder/cinder.conf.erb"),
         owner => "cinder",
+        group => "cinder",
         notify => Exec["cinder db_sync"],
     }
 
     file { "/etc/cinder/api-paste.ini":
         content => template("cinder/api-paste.ini.erb"),
         owner => "cinder",
+        group => "cinder",
         notify => Exec["cinder db_sync"],
     }
 

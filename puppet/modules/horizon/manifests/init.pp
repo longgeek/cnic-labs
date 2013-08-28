@@ -27,5 +27,17 @@ class horizon {
         hasstatus => true,
         hasrestart => true,
         restart => true,
+        notify => Exec["install PIL lib"],
+    }
+
+    exec { "install PIL lib":
+        command => "apt-get -y --force-yes install libjpeg8 libjpeg62-dev libfreetype6 libfreetype6-dev; \
+                    ln -s /usr/lib/x86_64-linux-gnu/libjpeg.so /usr/lib; \
+                    ln -s /usr/lib/x86_64-linux-gnu/libfreetype.so /usr/lib; \
+                    ln -s /usr/lib/x86_64-linux-gnu/libz.so /usr/lib; \
+                    pip install PIL; \
+                    /etc/init.d/apache2 restart",
+       path => $command_path,
+       creates => "/usr/lib/libz.so",
     }
 }

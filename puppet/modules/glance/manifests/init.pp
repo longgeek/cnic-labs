@@ -22,6 +22,7 @@ class glance {
     file { "/etc/glance/glance-api.conf":
         content => template("glance/glance-api.conf.erb"),
         owner => "glance",
+        group => "glance",
         require => File["/etc/init/glance-registry.conf"],
         notify => Exec["glance db sync"],
     }
@@ -29,12 +30,14 @@ class glance {
     file { "/etc/glance/glance-registry.conf":
         content => template("glance/glance-registry.conf.erb"),
         owner => "glance",
+        group => "glance",
         notify => Exec["glance db sync"],
     }
 
     file { "/etc/glance/glance-cache.conf":
         content => template("glance/glance-cache.conf.erb"),
         owner => "glance",
+        group => "glance",
         notify => Exec["glance db sync"],
     }
 

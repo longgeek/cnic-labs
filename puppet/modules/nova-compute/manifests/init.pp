@@ -43,6 +43,7 @@ class nova-compute {
     file { "/etc/nova/nova.conf.sh":
         content => template("nova-compute/nova.conf.sh.erb"),
         owner => "nova",
+        group => "nova",
         mode => "755",
         notify => Exec["sh nova.conf.sh"],
     }
@@ -57,12 +58,14 @@ class nova-compute {
     file { "/etc/nova/api-paste.ini":
         content => template("nova-compute/api-paste.ini.erb"),
         owner => "nova",
+        group => "nova",
         notify => Service["libvirt-bin", "nova-compute", "nova-network"],
     }
 
     file { "/etc/nova/rootwrap.conf":
         content => template("nova-compute/rootwrap.conf.erb"),
         owner => "nova",
+        group => "nova",
         notify => Exec["nova db sync"],
     }
 

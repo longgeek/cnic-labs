@@ -14,6 +14,7 @@ class keystone {
 	file { "/etc/keystone/logging.conf":
         content => template("keystone/logging.conf.erb"),
         owner => "keystone",
+        group => "keystone",
         require => File["/etc/init/keystone.conf"],
         notify => Exec["keystone-db-sync"],
 	}
@@ -21,6 +22,7 @@ class keystone {
 	file { "/etc/keystone/keystone.conf":
         content => template("keystone/keystone.conf.erb"),
         owner => "keystone",
+        group => "keystone",
         notify => Exec["keystone-db-sync"],
 	}
 

@@ -1,4 +1,4 @@
-class all_sources {
+class all-sources {
     ### Base
     user { ["keystone", "glance", "cinder", "nova", "apache"]:
         ensure => "present",
@@ -76,7 +76,7 @@ class all_sources {
                     cp etc/default_catalog.templates /etc/keystone/; \
                     cp etc/policy.json /etc/keystone/; \
                     [ -e /etc/init.d/keystone ] && /etc/init.d/keystone restart; \
-                    chown -R keystone:root /etc/keystone/",
+                    chown -R keystone:keystone /etc/keystone/ $source_dir/keystone",
         path => $command_path,
         cwd => $source_dir,
         refreshonly => true,
@@ -100,7 +100,7 @@ class all_sources {
                     pip install -r *.egg-info/requires.txt; \
                     python setup.py develop; \
                     [ -e /etc/init.d/keystone ] && /etc/init.d/keystone restart; \
-                    echo 'restart service'",
+                    chown -R keystone:keystone $source_dir/python-keystoneclient",
         path => $command_path,
         cwd => $source_dir,
         refreshonly => true,
@@ -134,7 +134,7 @@ class all_sources {
                     cp etc/policy.json /etc/glance/; \
                     [ -e /etc/init.d/glance-api ] && /etc/init.d/glance-api restart; \
                     /etc/init.d/glance-registry restart; \
-                    chown -R glance:root /etc/glance/",
+                    chown -R glance:glance /etc/glance/ $source_dir/glance",
         cwd => $source_dir,
         path => $command_path,
         refreshonly => true,
@@ -157,7 +157,7 @@ class all_sources {
                     python setup.py develop; \
                     [ -e /etc/init.d/glance-api ] && /etc/init.d/glance-api restart && \
                     /etc/init.d/glance-registry restart; \
-                    echo 'restart service'",
+                    chown -R glance:glance $source_dir/python-glanceclient",
         path => $command_path,
         cwd => $source_dir,
         refreshonly => true,
@@ -191,7 +191,7 @@ class all_sources {
                     [ -e /etc/init.d/cinder-api ] && /etc/init.d/cinder-api restart && \
                     /etc/init.d/cinder-scheduler restart && \
                     /etc/init.d/cinder-volume restart; \
-                    chown -R cinder:root /etc/cinder",
+                    chown -R cinder:cinder /etc/cinder $source_dir/cinder",
         cwd => $source_dir,
         path => $command_path,
         refreshonly => true,
@@ -215,7 +215,7 @@ class all_sources {
                     [ -e /etc/init.d/cinder-api ] && /etc/init.d/cinder-api restart && \
                     /etc/init.d/cinder-scheduler restart && \
                     /etc/init.d/cinder-volume restart; \
-                    echo 'restart service'",
+                    chown -R cinder:cinder $source_dir/python-cinderclient",
         cwd => $source_dir,
         path => $command_path,
         refreshonly => true,
@@ -262,7 +262,7 @@ class all_sources {
                     [ -e /etc/init.d/nova-consoleauth ] && /etc/init.d/nova-consoleauth restart; \
                     echo 'restart services'; \
                     [ -e /etc/init.d/nova-cert ] && /etc/init.d/nova-cert restart; \
-                    echo 'restart services'",
+                    chown -R nova:nova /etc/nova $source_dir/nova",
         path => $command_path,
         cwd => $source_dir,
         refreshonly => true,
@@ -297,7 +297,7 @@ class all_sources {
                     [ -e /etc/init.d/nova-novncproxy ] && /etc/init.d/nova-novncproxy restart; \
                     echo 'restart services'; \
                     [ -e /etc/init.d/nova-consoleauth ] && /etc/init.d/nova-consoleauth restart; \
-                    echo 'restart services'",
+                    chown -R nova:nova $source_dir/python-novaclient",
         path => $command_path,
         cwd => $source_dir,
         refreshonly => true,

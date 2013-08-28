@@ -1,15 +1,17 @@
 node default {
-    include all_sources
+    include all-sources
 }
 
 node 'control.local.com' inherits default {
-    Class["mysql"] -> Class["rabbitmq"] -> Class["keystone"] -> Class["cinder"] -> Class["nova"] -> Class["glance"] -> Class["horizon"]
+    Class["all-sources"] -> Class["mysql"] -> Class["rabbitmq"] -> Class["keystone"] -> Class["cinder"] -> Class["nova-control"] -> Class["glance"] -> Class["horizon"]
     include mysql, rabbitmq, keystone, cinder, nova, glance, horizon
 }
 
 node 'compute.local.com' inherits default {
+    Class["all-sources"] -> Class["nova-compute"]
     include nova-compute
 }
+
 
 $command_path                       = '/usr/local/sbin:/usr/local/bin:/sbin:/bin:/usr/sbin:/usr/bin:/root/bin:/bin/bash'
 $source_dir                         = '/opt/stack'
@@ -81,7 +83,7 @@ $nova_s3_host                       = '192.168.99.120'
 $nova_s3_port                       = '3333'
 $nova_my_ip                         = '192.168.99.120'
 $nova_metadata_host                 = '192.168.99.120'
-$libvirt_type                       = 'kvm'
+$libvirt_type                       = 'qemu'
 $libvirt_cpu_mode                   = 'none'
 $public_interface                   = 'br100'
 $vlan_interface                     = 'eth0'
