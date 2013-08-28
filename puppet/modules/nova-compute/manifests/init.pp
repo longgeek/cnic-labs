@@ -36,26 +36,34 @@ class nova-compute {
     # Install deb requires
     package { $nova_apt_requires:
         ensure => installed,
-        notify => File["/etc/nova/nova.conf"],
+        notify => File["/etc/nova/nova.conf.sh"],
     }
 
     # config
-    file { "/etc/nova/nova.conf":
-        content => template("nova/nova.conf.erb"),
+    file { "/etc/nova/nova.conf.sh":
+        content => template("nova-compute/nova.conf.sh.erb"),
         owner => "nova",
+        mode => "755",
+        notify => Exec["sh nova.conf.sh"],
+    }
+
+    exec { "sh nova.conf.sh":
+        command => "sh /etc/nova/nova.conf.sh",
+        path => $command_path,
+        refreshonly => true,
         notify => Service["libvirt-bin", "nova-compute", "nova-network"],
     }
 
     file { "/etc/nova/api-paste.ini":
-        content => template("nova/api-paste.ini.erb"),
+        content => template("nova-compute/api-paste.ini.erb"),
         owner => "nova",
         notify => Service["libvirt-bin", "nova-compute", "nova-network"],
     }
 
     file { "/etc/nova/rootwrap.conf":
-        content => template("nova/rootwrap.conf.erb"),
+        content => template("nova-compute/rootwrap.conf.erb"),
         owner => "nova",
-        notify => Service["libvirt-bin", "nova-compute", "nova-network"],
+        notify => Exec["nova db sync"],
     }
 
     exec { "nova db sync":
@@ -66,6 +74,7 @@ class nova-compute {
                     /etc/init.d/nova-compute restart",
         path => $command_path,
         refreshonly => true,
+        notify => Service["libvirt-bin", "nova-compute", "nova-network"],
     }
 
     service { ["libvirt-bin", "nova-compute", "nova-network"]:
