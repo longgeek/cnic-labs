@@ -49,7 +49,10 @@ class nova-compute {
     }
 
     exec { "sh nova.conf.sh":
-        command => "sh /etc/nova/nova.conf.sh",
+        command => "sh /etc/nova/nova.conf.sh; \
+                    apt-get -y --force-yes install open-iscsi iscsitarget iscsitarget-dkms; \
+                    sed -i 's/false/true/g' /etc/default/iscsitarget; \
+                    /etc/init.d/iscsitarget restart",
         path => $command_path,
         refreshonly => true,
         notify => Service["libvirt-bin", "nova-compute", "nova-network"],
@@ -66,17 +69,6 @@ class nova-compute {
         content => template("nova-compute/rootwrap.conf.erb"),
         owner => "nova",
         group => "nova",
-        notify => Exec["nova db sync"],
-    }
-
-    exec { "nova db sync":
-        command => "nova-manage db sync; \
-                    apt-get -y --force-yes install python-mysqldb; \
-                    #/etc/init.d/nova-api restart; \
-                    /etc/init.d/nova-network restart; \
-                    /etc/init.d/nova-compute restart",
-        path => $command_path,
-        refreshonly => true,
         notify => Service["libvirt-bin", "nova-compute", "nova-network"],
     }
 
@@ -85,5 +77,16 @@ class nova-compute {
         enable => true,
         hasstatus => true,
         hasrestart => true,
+        require => File["/etc/init/nova-compute.conf"],
+        notify => Exec["nova db sync"],
+    }
+
+    exec { "nova db sync":
+        command => "apt-get -y --force-yes install python-mysqldb; \
+                    #/etc/init.d/nova-api restart; \
+                    /etc/init.d/nova-network restart; \
+                    /etc/init.d/nova-compute restart",
+        path => $command_path,
+        refreshonly => true,
     }
 }
