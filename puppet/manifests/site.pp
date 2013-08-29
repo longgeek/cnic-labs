@@ -1,27 +1,15 @@
-node default {
-    include all-sources
-}
-
-node 'control.local.com' inherits default {
-    Class["all-sources"] -> Class["mysql"] -> Class["rabbitmq"] -> Class["keystone"] -> Class["cinder"] -> Class["nova-control"] -> Class["glance"] -> Class["horizon"]
-    include mysql, rabbitmq, keystone, cinder, nova-control, glance, horizon
-}
-
-node 'compute.local.com' inherits default {
-    Class["all-sources"] -> Class["nova-compute"]
-    include nova-compute
-}
+import 'nodes.pp'
 
 
 $command_path                       = '/usr/local/sbin:/usr/local/bin:/sbin:/bin:/usr/sbin:/usr/bin:/root/bin:/bin/bash'
 $source_dir                         = '/opt/stack'
 $source_apt_requires                = ["build-essential", "python-dev", "python-setuptools", "python-pip", "libxml2-dev", "libxslt1-dev", "git", "python-numpy"]
 ## MYSQL
-$mysql_host                         = '192.168.99.120'
+$mysql_host                         = '%mysql%'
 $mysql_root_password                = 'csdb123cnic'
 
 ## KEYSTONE
-$keystone_host                      = '192.168.99.120'
+$keystone_host                      = '%keystone%'
 $keystone_source_pack_name          = 'keystone.tar.gz'
 $keystone_client_source_pack_name   = 'python-keystoneclient.tar.gz'
 $admin_token                        = 'admin'
@@ -47,10 +35,10 @@ $glance_client_source_pack_name     = 'python-glanceclient.tar.gz'
 $glance_log_verbose                 = 'True'
 $glance_log_debug                   = 'False'
 $glance_default_store               = 'file'
-$glance_host                        = '192.168.99.120'
+$glance_host                        = '%glance%'
 
 ## AMQP
-$rabbit_host                        = '192.168.99.120'
+$rabbit_host                        = '%rabbit%'
 $rabbit_userid                      = 'guest'
 $rabbit_password                    = 'longgeek'
 
@@ -79,10 +67,10 @@ $nova_novnc_source_pack_name        = 'noVNC.tar.gz'
 $nova_apt_requires                  = ["bridge-utils", "kvm", "libvirt-bin", "libvirt-dev", "python-libvirt", "qemu-kvm", "python-m2crypto"]
 $nova_log_verbose                   = 'True'
 $nova_log_debug                     = 'False'
-$nova_s3_host                       = '192.168.99.120'
+$nova_s3_host                       = $nova_my_ip
 $nova_s3_port                       = '3333'
-$nova_my_ip                         = '192.168.99.120'
-$nova_metadata_host                 = '192.168.99.120'
+$nova_my_ip                         = '%nova%'
+$nova_metadata_host                 = $nova_my_ip
 $libvirt_type                       = 'qemu'
 $libvirt_cpu_mode                   = 'none'
 $public_interface                   = 'br100'
@@ -92,10 +80,10 @@ $flat_interface                     = 'eth0'
 $fixed_range                        = '10.0.0.0/20'
 $floating_range                     = '192.168.99.32/27'
 $network_size                       = '4096'
-$ec2_dmz_host                       = '192.168.99.120'
-$novncproxy_host                    = '192.168.99.120'
-$xvpvncproxy_host                   = '192.168.99.120'
-$vncserver_proxyclient_address      = '192.168.99.120'
+$ec2_dmz_host                       = $nova_my_ip
+$novncproxy_host                    = $nova_my_ip
+$xvpvncproxy_host                   = $nova_my_ip
+$vncserver_proxyclient_address      = $nova_my_ip
 
 ## HORIZON
 $horizon_apt_requires               = ["apache2", "memcached", "python-memcache", "nodejs", "libapache2-mod-wsgi"]
@@ -109,4 +97,4 @@ $monitor_db_name                    = 'monitor'
 $monitor_db_user                    = 'monitor'
 $monitor_db_password                = 'monitor'
 ## SWIFT
-$swift_proxy_host                   = '192.168.99.120'
+#$swift_proxy_host                   = '172.16.0.101'
