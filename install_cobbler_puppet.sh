@@ -82,6 +82,7 @@ dhcp-boot=net:ia64,\$elilo
 
 \$insert_cobbler_system_definitions
 _GEEK_
+[ ! -e /etc/dnsmasq.d/hosts.conf ] && touch /etc/dnsmasq.d/hosts.conf
 
 ## 挂在 ISO 镜像，并导入
 umount $ISO_NAME
