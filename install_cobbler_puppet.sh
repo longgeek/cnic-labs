@@ -1,5 +1,5 @@
 #!/bin/bash 
-
+set -x
 #--------------------------------- Cobbler -------------------------------------
 
 # 一些基本的变量
@@ -87,7 +87,7 @@ _GEEK_
 umount $ISO_NAME
 [ ! -e /geek ] && mkdir /geek
 mount -o loop $ISO_NAME /geek/ || exit 0
-cobbler import --path=/geek --name=$ISO_TYPE
+cobbler import --path=/geek --name=ECCP-$ISO_TYPE
 cobbler distro edit --name=$ISO_TYPE-x86_64 \
 --kernel=/var/www/cobbler/ks_mirror/$ISO_TYPE/install/netboot/ubuntu-installer/amd64/linux \
 --initrd=/var/www/cobbler/ks_mirror/$ISO_TYPE/install/netboot/ubuntu-installer/amd64/initrd.gz \
