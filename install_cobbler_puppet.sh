@@ -49,9 +49,9 @@ grep $COBBLER_WEB_PORT $COBBLER_PATH || sed -i "/http_port: .*$/ s/80/$COBBLER_W
 cp $TOP_DIR/eccp.preseed $COBBLER_PRESEED
 sed -i "s/changeme/$ROOT_PASSWD/g" $COBBLER_PRESEED
 sed -i "s/hostname string.*$/hostname string $IPADDR/g" $COBBLER_PRESEED
-sed -i "s/directory string.*$/directory string \/cobbler\/ks_mirror\/$ISO_TYPE/g" $COBBLER_PRESEED
+sed -i "s/directory string.*$/directory string \/cobbler\/ks_mirror\/ECCP-$ISO_TYPE/g" $COBBLER_PRESEED
 sed -i "s/security_host string.*$/security_host string $IPADDR/g" $COBBLER_PRESEED
-sed -i "s/security_path string.*$/security_path string \/cobbler\/ks_mirror\/$ISO_TYPE/g" $COBBLER_PRESEED
+sed -i "s/security_path string.*$/security_path string \/cobbler\/ks_mirror\/ECCP-$ISO_TYPE/g" $COBBLER_PRESEED
 
 echo "server $IPADDR
 server 127.127.1.0
@@ -89,11 +89,11 @@ umount $ISO_NAME
 [ ! -e /geek ] && mkdir /geek
 mount -o loop $ISO_NAME /geek/ || exit 0
 cobbler import --path=/geek --name=ECCP-$ISO_TYPE
-cobbler distro edit --name=$ISO_TYPE-x86_64 \
---kernel=/var/www/cobbler/ks_mirror/$ISO_TYPE/install/netboot/ubuntu-installer/amd64/linux \
---initrd=/var/www/cobbler/ks_mirror/$ISO_TYPE/install/netboot/ubuntu-installer/amd64/initrd.gz \
+cobbler distro edit --name=ECCP-$ISO_TYPE-x86_64 \
+--kernel=/var/www/cobbler/ks_mirror/ECCP-$ISO_TYPE/install/netboot/ubuntu-installer/amd64/linux \
+--initrd=/var/www/cobbler/ks_mirror/ECCP-$ISO_TYPE/install/netboot/ubuntu-installer/amd64/initrd.gz \
 --os-version=precise
-cobbler profile edit --name=$ISO_TYPE-x86_64 \
+cobbler profile edit --name=ECCP-$ISO_TYPE-x86_64 \
 --kopts="netcfg/choose_interface=auto " \
 --kickstart=$COBBLER_PRESEED
 

@@ -46,8 +46,9 @@ def write_conf(data = [{"ip": "172.16.0.101", "hostname": "control.local.com", "
         if node_info["power-type"] and node_info["power-address"] and \
            node_info["power-user"] and node_info["power-pass"] != "":
             os.system("cobbler system add --name=%s --hostname=%s \
-                      --profile=$(cobbler profile list | grep ECCP) \
-                      --mac=%s --interface=eth0 --ip-address=%s --static=1" % \
+                      --profile=$(cobbler profile list | grep ECCP | \
+                      awk '{print $1}') --mac=%s --interface=eth0 \
+                      --ip-address=%s --static=1" % \
                      (node_info["hostname"], node_info["hostname"], \
                       node_info["mac"], node_info["ip"]))
 
@@ -60,8 +61,9 @@ def write_conf(data = [{"ip": "172.16.0.101", "hostname": "control.local.com", "
         # 没有使用远控卡
         else:
             os.system("cobbler system add --name=%s --hostname=%s \
-                      --profile=$(cobbler profile list | grep ECCP) --mac=%s \
-                      --interface=eth0 --ip-address=%s --static=1" % \
+                      --profile=$(cobbler profile list | grep ECCP |  \
+                      awk '{print $1}') --mac=%s --interface=eth0 \
+                      --ip-address=%s --static=1" % \
                      (node_info["hostname"], node_info["hostname"], \
                       node_info["mac"], node_info["ip"]))
 
@@ -110,6 +112,7 @@ def write_conf(data = [{"ip": "172.16.0.101", "hostname": "control.local.com", "
     puppet_nodes_conf_content.close()
     puppet_site_conf_content.close()
 
+    os.system("/etc/init.d/dnsmasq restart; /etc/init.d/cobbler restart")
     return 'Done!'
 
-#write_conf()
+write_conf()
