@@ -132,7 +132,23 @@ IFACE="eth0"
 echo "$IPADDR  $(hostname)" >> /etc/hosts
 
 IPADDR=\$(ifconfig \$IFACE | grep 'inet addr' | awk '{print \$2}' | awk -F: '{print \$2}')
+NETMASK=\$(ifconfig \$IFACE | grep Mask | awk -F: '{print \$NF}')
+echo "\$(hostname -f)" > /etc/hostname
 echo "\$IPADDR  \$(hostname -f) \$(hostname)" >> /etc/hosts
+
+cat > /etc/network/interfaces << _GEEK_
+auto lo
+iface lo inet loopback
+
+auto eth0
+iface eth0 inet static
+    address \$IPADDR
+    netmask \$NETMASK
+    gateway $IPADDR
+    dns-nameservers $IPADDR
+_GEEK_
+/etc/init.d/networking restart
+
 echo "deb http://$IPADDR/ deb-packages/
 #deb http://mirrors.163.com/ubuntu/ precise main universe restricted multiverse
 #deb-src http://mirrors.163.com/ubuntu/ precise main universe restricted multiverse
