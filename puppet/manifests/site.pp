@@ -97,4 +97,4 @@ $monitor_db_name                    = 'monitor'
 $monitor_db_user                    = 'monitor'
 $monitor_db_password                = 'monitor'
 ## SWIFT
-#$swift_proxy_host                   = '172.16.0.101'
+$swift_proxy_host                   = $nova_my_ip
