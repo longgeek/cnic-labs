@@ -80,23 +80,22 @@ class nova-control {
     file { "$source_dir/eccp.license":
         source => "puppet:///files/eccp.license",
         require => File["/etc/init/nova-xvpvncproxy.conf"],
-        notify => Package[$nova_apt_requires],
-    }
-
-    package { $nova_apt_requires:
-        ensure => installed,
         notify => Exec["libvirt live migration"],
     }
 
     exec { "libvirt live migration":
         command => "sed -i 's/#listen_tls/listen_tls/' /etc/libvirt/libvirtd.conf; \
                     sed -i 's/#listen_tcp/listen_tcp/' /etc/libvirt/libvirtd.conf; \
-                    sed -i 's/^.auth_tcp.*$/auth_tcp = \"none\"/' /etc/libvirt/libvirtd.conf; \
+                    sed -i 's/^.auth_tcp.*$/auth_tcp = "none"/' /etc/libvirt/libvirtd.conf; \
                     sed -i 's/exec \/usr\/sbin\/libvirtd \$libvirtd_opts/exec \/usr\/sbin\/libvirtd -d -l/' /etc/init/libvirt-bin.conf; \
-                    sed -i 's/libvirtd_opts=\"-d\"/libvirtd_opts=\"-d -l\"/' /etc/default/libvirt-bin; \
-                    /etc/init.d/libvirt-bin restart",
+                    sed -i 's/libvirtd_opts="-d"/libvirtd_opts="-d -l"/' /etc/default/libvirt-bin",
         path => $command_path,
         onlyif => "grep ^#listen_tls /etc/libvirt/libvirtd.conf",
+        notify => Package[$nova_apt_requires],
+    }
+
+    package { $nova_apt_requires:
+        ensure => installed,
         notify => Service["libvirt-bin"],
     }
 
