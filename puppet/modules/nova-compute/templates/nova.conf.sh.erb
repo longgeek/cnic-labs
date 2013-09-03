@@ -1,5 +1,10 @@
 IPADDR=$(ifconfig eth0 | grep 'inet addr' | awk -F: '{print $2}' | awk '{print $1}')
 
+if [ "$IPADDR" = "" ]
+then
+    IPADDR=$(ip a | grep br100 | grep inet | grep -v `ifconfig br100 | grep Bcast | awk -F: '{print $3}' | awk '{print $1}'` | awk -F'/' '{print $1}' | awk '{print $2}')
+fi
+
 cat > /etc/nova/nova.conf << _GEEK_
 [DEFAULT]
 verbose = <%= nova_log_verbose %>
@@ -8,7 +13,7 @@ logdir = /var/log/nova
 lock_path = /var/lock/nova
 state_path = /var/lib/nova
 auth_strategy = keystone
-allow_resize_to_same_host = True
+allow_resize_to_same_host = False
 api_paste_config = /etc/nova/api-paste.ini
 rootwrap_config = /etc/nova/rootwrap.conf
 compute_scheduler_driver = nova.scheduler.filter_scheduler.FilterScheduler
@@ -23,12 +28,12 @@ fixed_range = 10.0.0.0/20
 s3_host = <%= nova_s3_host %>
 s3_port = <%= nova_s3_port %>
 osapi_compute_extension = nova.api.openstack.compute.contrib.standard_extensions
-my_ip = <%= nova_my_ip %>
+my_ip = $IPADDR
 start_guests_on_host_boot = True
 resume_guests_state_on_host_boot = True
 rabbit_max_retries = 0
 auto_assign_floating_ip = false
-metadata_host = <%= nova_metadata_host %>
+metadata_host = $IPADDR
 metadata_port = 8775
 sql_connection = mysql://<%= nova_db_user %>:<%= nova_db_password %>@<%= mysql_host %>/<%= nova_db_name %>?charset=utf8
 #baremetal_sql_connection = mysql://root:csdb123cnic@127.0.0.1/baremetal?charset=utf8
