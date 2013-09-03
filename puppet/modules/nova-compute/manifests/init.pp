@@ -1,10 +1,6 @@
 class nova-compute {
 
     file { 
-        "/etc/init.d/nova-api":
-            source => "puppet:///files/contrib/nova/nova-api",
-            mode => "0755";
-
         "/etc/init.d/nova-compute":
             source => "puppet:///files/contrib/nova/nova-compute",
             mode => "0755";
@@ -18,10 +14,6 @@ class nova-compute {
             mode => "0755";
 
         # CONF
-        "/etc/init/nova-api.conf":
-            source => "puppet:///files/contrib/nova/nova-api.conf",
-            mode => "0644";
-
         "/etc/init/nova-compute.conf":
             source => "puppet:///files/contrib/nova/nova-compute.conf",
             mode => "0644";
@@ -38,23 +30,26 @@ class nova-compute {
     file { "$source_dir/eccp.license":
         source => "puppet:///files/eccp.license",
         require => File["/etc/init/nova-network.conf"],
-        notify => Exec["libvirt live migration"],
-    }
-
-    exec { "libvirt live migration":
-        command => "sed -i 's/#listen_tls/listen_tls/' /etc/libvirt/libvirtd.conf; \
-                    sed -i 's/#listen_tcp/listen_tcp/' /etc/libvirt/libvirtd.conf; \
-                    sed -i 's/^.auth_tcp.*$/auth_tcp = "none"/' /etc/libvirt/libvirtd.conf; \
-                    sed -i 's/exec \/usr\/sbin\/libvirtd \$libvirtd_opts/exec \/usr\/sbin\/libvirtd -d -l/' /etc/init/libvirt-bin.conf; \
-                    sed -i 's/libvirtd_opts="-d"/libvirtd_opts="-d -l"/' /etc/default/libvirt-bin",
-        path => $command_path,
-        onlyif => "grep ^#listen_tls /etc/libvirt/libvirtd.conf",
         notify => Package[$nova_apt_requires],
     }
 
     # Install deb requires
     package { $nova_apt_requires:
         ensure => installed,
+        notify => Exec["libvirt live migration"],
+    }
+
+    exec { "libvirt live migration":
+        command => "sed -i 's/#listen_tls/listen_tls/' /etc/libvirt/libvirtd.conf; \
+                    sed -i 's/#listen_tcp/listen_tcp/' /etc/libvirt/libvirtd.conf; \
+                    sed -i 's/^.auth_tcp.*$/auth_tcp = \"none\"/' /etc/libvirt/libvirtd.conf; \
+                    sed -i 's/exec \/usr\/sbin\/libvirtd \$libvirtd_opts/exec \/usr\/sbin\/libvirtd -d -l/' /etc/init/libvirt-bin.conf; \
+                    sed -i 's/libvirtd_opts=\"-d\"/libvirtd_opts=\"-d -l\"/' /etc/default/libvirt-bin; \
+                    grep nbd /etc/modules || echo nbd >> /etc/modules; \
+                    modprode nbd; \
+                    /etc/init.d/libvirt-bin restart",
+        path => $command_path,
+        onlyif => "grep ^#listen_tls /etc/libvirt/libvirtd.conf",
         notify => File["/etc/nova/nova.conf.sh"],
     }
 
