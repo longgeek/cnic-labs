@@ -35,6 +35,10 @@ def write_conf(data = [{"ip": "172.16.0.101", "hostname": "control.local.com", "
 
     # 遍历 json 数据
     for node_info in data:
+        if node_info["ip"] or node_info["hostname"] or node_info["mac"] in \
+                              dns_conf_content or dhcp_hosts_conf_content:
+            print "NOTE: Data record already exists, Please check the input!"
+            return "NOTE: Data record already exists, Please check the input!"
         # 拿到 IP 和 HOSTNAME 写入到 DNS 配置文件
         dns_conf_content.write("%s %s\n" % (node_info["ip"], 
                                     node_info["hostname"]))
@@ -86,22 +90,22 @@ def write_conf(data = [{"ip": "172.16.0.101", "hostname": "control.local.com", "
 
         # 修改 puppet site.pp 相关节点 IP 地址
         if 'mysql' in node_info["type"]:
-            site_content = re.sub("%mysql%", node_info["ip"], site_content)
+            site_content = re.sub("%mysql%", node_info["hostname"], site_content)
 
         if 'rabbitmq' in node_info["type"]:
-          site_content = re.sub("%rabbit%", node_info["ip"], site_content)
+          site_content = re.sub("%rabbit%", node_info["hostname"], site_content)
 
         if 'keystone' in node_info["type"]:
-          site_content = re.sub("%keystone%", node_info["ip"], site_content)
+          site_content = re.sub("%keystone%", node_info["hostname"], site_content)
 
         if 'cinder' in node_info["type"]:
-          site_content = re.sub("%cinder%", node_info["ip"], site_content)
+          site_content = re.sub("%cinder%", node_info["hostname"], site_content)
 
         if 'glance' in node_info["type"]:
-          site_content = re.sub("%glance%", node_info["ip"], site_content)
+          site_content = re.sub("%glance%", node_info["hostname"], site_content)
 
         if 'nova-control' in node_info["type"]:
-            site_content = re.sub("%nova%", node_info["ip"], site_content)
+            site_content = re.sub("%nova%", node_info["hostname"], site_content)
 
     # 把 site.pp 修改完的内容写入到文件        
     open(puppet_site_conf, "wb").write(site_content)
