@@ -54,7 +54,7 @@ $cinder_log_debug                   = 'False'
 $cinder_volume_format               = 'file'                            # 默认为 'file', 用文件来模拟分区, 设置为 'file'是依赖 '$cinder_volume_size'
                                                                         # 设置为 'disk'时，依赖 '$cinder_volume_disk_part’
 $cinder_volume_size                 = '5G'                              # 使用 file 的话需要指定大小, 必须有单位
-$cinder_volume_disk_part            = ["sdb1"]                          # 指定 cinder 使用哪些硬盘分区, 例如: "['sdb1', 'sdc1', 'sdd1']"
+$cinder_volume_disk_part            = '["sdb1"]'                          # 指定 cinder 使用哪些硬盘分区, 例如: "['sdb1', 'sdc1', 'sdd1']"
 
 
 ## NOVA
@@ -67,9 +67,9 @@ $nova_novnc_source_pack_name        = 'noVNC.tar.gz'
 $nova_apt_requires                  = ["bridge-utils", "kvm", "libvirt-bin", "libvirt-dev", "python-libvirt", "qemu-kvm", "python-m2crypto", "dnsmasq-utils"]
 $nova_log_verbose                   = 'True'
 $nova_log_debug                     = 'False'
+$nova_my_ip                         = '%nova%'
 $nova_s3_host                       = $nova_my_ip
 $nova_s3_port                       = '3333'
-$nova_my_ip                         = '%nova%'
 $nova_metadata_host                 = $nova_my_ip
 $libvirt_type                       = 'qemu'
 $libvirt_cpu_mode                   = 'none'

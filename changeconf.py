@@ -109,7 +109,7 @@ def write_conf(data = [{"ip": "172.16.0.201", "hostname": "control.eccp.com", "m
           site_content = re.sub("%glance%", node_info["hostname"], site_content)
 
         if 'nova-control' in node_info["type"]:
-            site_content = re.sub("%nova%", node_info["hostname"], site_content)
+            site_content = re.sub("%nova%", node_info["ip"], site_content)
 
     # 把 site.pp 修改完的内容写入到文件        
     open(puppet_site_conf, "wb").write(site_content)
