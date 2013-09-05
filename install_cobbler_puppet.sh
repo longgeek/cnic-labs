@@ -137,7 +137,7 @@ NETMASK=\$(ifconfig \$IFACE | grep Mask | awk -F: '{print \$NF}')
 echo "\$(hostname -f)" > /etc/hostname
 echo "\$IPADDR  \$(hostname -f) \$(hostname)" >> /etc/hosts
 
-cat > /etc/network/interfaces << _GEEK_
+cat > /etc/network/interfaces << _GEEKS_
 auto lo
 iface lo inet loopback
 
@@ -147,7 +147,7 @@ iface eth0 inet static
     netmask \$NETMASK
     gateway $IPADDR
     dns-nameservers $IPADDR
-_GEEK_
+_GEEKS_
 /etc/init.d/networking restart
 
 echo "deb http://$IPADDR/ deb-packages/
