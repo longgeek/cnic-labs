@@ -32,15 +32,18 @@ def write_conf(data = [{"ip": "172.16.0.201", "hostname": "control.eccp.com", "m
     puppet_nodes_conf_content = open(puppet_nodes_conf, "a+")
     puppet_site_conf_content = open(puppet_site_conf)
     site_content = puppet_site_conf_content.read()
+    dns_content = dns_conf_content.read()
+    dhcp_content = dhcp_hosts_conf_content.read()
 
     # 遍历 json 数据
     for node_info in data:
         for i in [node_info["ip"], node_info["hostname"], node_info["mac"]]:
-            for j in [dns_conf_content.read(), dhcp_hosts_conf_content.read()]:
+            for j in [dns_content, dhcp_content]:
                 if i in j:
                     print "NOTE: Data record already exists, Please check the input!"
                     return "NOTE: Data record already exists, Please check the input!"
         # 拿到 IP 和 HOSTNAME 写入到 DNS 配置文件
+        print node_info['ip'], node_info['hostname'], 'aaaaaaaaaaaaaaa'
         dns_conf_content.write("%s %s\n" % (node_info["ip"], 
                                     node_info["hostname"]))
         # 把 IP、HOSTNAME、MAC 写入到 DHCP 配置文件，做地址绑定
