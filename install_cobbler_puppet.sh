@@ -122,6 +122,7 @@ cat > /etc/puppet/autosign.conf << _GEEK_
 _GEEK_
 
 /etc/init.d/puppetmaster restart
+apt-get -y remove --purge puppet
 
 # Puppet Agent--------------------------------------
 
