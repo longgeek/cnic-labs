@@ -14,7 +14,12 @@ __author__ = [
 ]
 
 import os
+import sys
 import re
+
+if len(sys.argv) != 2:
+    print "Missing or extra positional parameters!"
+    exit(1)
 
 # 主要修改的几个配置文件路径
 dns_conf = "/var/lib/cobbler/cobbler_hosts"
@@ -22,7 +27,7 @@ dhcp_hosts_conf = "/etc/dnsmasq.d/hosts.conf"
 puppet_nodes_conf = "/etc/puppet/manifests/nodes.pp"
 puppet_site_conf = "/etc/puppet/manifests/site.pp"
 
-def write_conf(data = [{"ip": "172.16.0.201", "hostname": "control.eccp.com", "mac": "52:54:00:09:51:14", "type": ["mysql", "rabbitmq", "keystone", "cinder", "glance", "nova-control", "horizon"], "power-type": "ipmi", "power-address": "1.1.1.1", "power-user": "", "power-pass": ""}, {"ip": "172.16.0.202", "hostname": "compute.eccp.com", "mac": "52:54:00:2c:53:1b", "type": ["nova-compute"], "power-type": "ipmi", "power-address": "1.1.1.1", "power-user": "", "power-pass": ""}]):
+def write_conf(data):
 
     """本函数通过传递参数来添加节点相关的信息，来修改 DNS、DHCP、PUPPET 和 Cobbler 配置文件."""
 
@@ -121,6 +126,8 @@ def write_conf(data = [{"ip": "172.16.0.201", "hostname": "control.eccp.com", "m
     puppet_site_conf_content.close()
 
     os.system("/etc/init.d/dnsmasq restart > /dev/null 2>&1; /etc/init.d/cobbler restart > /dev/null 2>&1")
+    print 'Done!'
     return 'Done!'
 
-write_conf()
+if __name__ == "__main__":
+    write_conf(eval(sys.argv[1]))
