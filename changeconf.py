@@ -26,6 +26,7 @@ dns_conf = "/var/lib/cobbler/cobbler_hosts"
 dhcp_hosts_conf = "/etc/dnsmasq.d/hosts.conf"
 puppet_nodes_conf = "/etc/puppet/manifests/nodes.pp"
 puppet_site_conf = "/etc/puppet/manifests/site.pp"
+power_type = ['ilo', 'ipmilan', 'ipmitool', 'rsa']
 
 def write_conf(data):
 
@@ -48,7 +49,7 @@ def write_conf(data):
                     print "NOTE: Data record already exists, Please check the input!"
                     return "NOTE: Data record already exists, Please check the input!"
         # 拿到 IP 和 HOSTNAME 写入到 DNS 配置文件
-        print node_info['ip'], node_info['hostname'], 'aaaaaaaaaaaaaaa'
+        print node_info['ip'], node_info['hostname']
         dns_conf_content.write("%s %s\n" % (node_info["ip"], 
                                     node_info["hostname"]))
         # 把 IP、HOSTNAME、MAC 写入到 DHCP 配置文件，做地址绑定
@@ -57,7 +58,8 @@ def write_conf(data):
 
         # 配置了远控卡信息
         if node_info["power-type"] and node_info["power-address"] and \
-           node_info["power-user"] and node_info["power-pass"] != "":
+           node_info["power-user"] and node_info["power-pass"] != "" \
+                                   and node_info["power-type"] in power_type:
             os.system("cobbler system add --name=%s --hostname=%s \
                       --profile=$(cobbler profile list | grep ECCP | \
                       awk '{print $1}') --mac=%s --interface=eth0 \
@@ -86,16 +88,15 @@ def write_conf(data):
             class_order += ' -> Class["%s"]' % types
 
         # 拿到节点需要 include 的模块
-        include_module = 'include '
+        include_module = 'include all-sources, '
         for types in node_info["type"]:
             include_module += '%s' % types
             if types != node_info["type"][-1]:
                 include_module += ', '
 
         # 写入到 Puppet 节点角色配置文件中
-        puppet_nodes_conf_content.write("node '%s' inherits default { \
-            \n\t%s\n\t%s\n}\n\n" % (node_info["hostname"], class_order, 
-                                                       include_module))
+        puppet_nodes_conf_content.write("node '%s' { \n\t%s\n\t%s\n}\n\n" % 
+                            (node_info["hostname"], class_order, include_module))
 
         # 修改 puppet site.pp 相关节点 IP 地址
         if 'mysql' in node_info["type"]:
