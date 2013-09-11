@@ -1,10 +1,19 @@
 class all-sources {
     ### Base
-    user { ["keystone", "glance", "cinder", "nova", "apache"]:
+    user { ["keystone", "glance", "cinder", "apache"]:
         ensure => "present",
         shell => "/usr/sbin/nologin",
-        notify => Group["kvm", "libvirtd"],
+        notify => User["nova"],
     }   
+
+    user { "nova":
+        ensure => "present",
+        shell => "/bin/bash",
+        home => "/home/nova",
+        managehome => true,
+        password => "$1$n22iL1$BrZS39stYckjHET8d9xx20",
+        notify => Group["kvm", "libvirtd"],
+    }
 
     group { ["kvm", "libvirtd"]:
         ensure => "present",
@@ -17,17 +26,45 @@ class all-sources {
     }   
 
     exec { "initialization base":
-        command => "mkdir -p /root/.pip; usermod nova -G kvm,libvirtd; mkdir -p $source_dir",
+        command => "mkdir -p /root/.pip; usermod nova -G kvm,libvirtd; \
+                    echo 'nova    ALL=(ALL:ALL) NOPASSWD:NOPASSWD:ALL' >> /etc/sudoers; \
+                    echo 'StrictHostKeyChecking  no' >> /etc/ssh/ssh_config; \
+                    /etc/init.d/ssh restart; \
+                    mkdir -p $source_dir",
         path => $command_path,
         creates => "$source_dir",
         require => Package["git"],
-        notify => File["/etc/sudoers.d/nova-rootwrap"],
+        notify => File["/home/nova/.ssh"],
     }   
+
+    file { "/home/nova/.ssh":
+        ensure => directory,
+        owner => nova,
+        group => nova,
+        mode => 700,
+        require => Exec["initialization base"],
+        notify => File["/home/nova/.ssh/authorized_keys"],
+    }
+  
+    file { "/home/nova/.ssh/authorized_keys":
+        source => "puppet:///files/nova-sshkey/authorized_keys",
+        owner => nova,
+        group => nova,
+        mode => 600,
+        notify => File["/home/nova/.ssh/id_rsa"],
+    }
+
+    file { "/home/nova/.ssh/id_rsa":
+        source => "puppet:///files/nova-sshkey/id_rsa",
+        owner => nova,
+        group => nova,
+        mode => 600,
+        notify => File["/etc/sudoers.d/nova-rootwrap"],
+    }
 
     file { "/etc/sudoers.d/nova-rootwrap":
         source => "puppet:///files/nova-rootwrap",
         mode => "0440",
-        require => Exec["initialization base"],
         notify => File["/etc/sudoers.d/cinder-rootwrap"],
     }   
 
@@ -223,7 +260,7 @@ class all-sources {
 
 ### Nova
     # mkdir dir
-    file { ["/etc/nova", "/var/log/nova", "/var/lib/nova", "/var/run/nova", "/var/lib/nova/instances", "/var/lock/nova", "/home/nova"]:
+    file { ["/etc/nova", "/var/log/nova", "/var/lib/nova", "/var/run/nova", "/var/lib/nova/instances", "/var/lock/nova"]:
         ensure => directory,
         owner => "nova",
         require => Exec["untar cinder-client"],
@@ -385,5 +422,13 @@ class all-sources {
         path => $command_path,
         cwd => $source_dir,
         refreshonly => true,
+        notify => File["/etc/profile.d/set_env.sh"],
+    }
+  
+    file { "/etc/profile.d/set_env.sh":
+        content => template("all-sources/set_env.sh.erb"),
+        mode => 644,
+        owner => 'root',
+        group => 'root',
     }
 }
