@@ -1,4 +1,4 @@
-import 'nodes.pp'
+import 'nodes/*'
 
 
 $command_path                       = '/usr/local/sbin:/usr/local/bin:/sbin:/bin:/usr/sbin:/usr/bin:/root/bin:/bin/bash'
