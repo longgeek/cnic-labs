@@ -1,0 +1,11 @@
+#!/bin/bash
+
+if [ "`id -u`" -eq 0 ]; then
+    export OS_TENANT_NAME=admin
+    export OS_USERNAME=admin
+    export OS_PASSWORD=<%= admin_password %>
+    export OS_AUTH_URL=http://<%= keystone_host %>:5000/v2.0/
+    export OS_REGION_NAME=<%= keystone_region %>
+    export SERVICE_TOKEN=<%= admin_token %>
+    export SERVICE_ENDPOINT=http://<%= keystone_host %>:35357/v2.0/
+fi
