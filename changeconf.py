@@ -24,8 +24,7 @@ if len(sys.argv) != 2:
 # 主要修改的几个配置文件路径
 dns_conf = "/var/lib/cobbler/cobbler_hosts"
 dhcp_hosts_conf = "/etc/dnsmasq.d/hosts.conf"
-puppet_nodes_conf = "/etc/puppet/manifests/nodes.pp"
-puppet_site_conf = "/etc/puppet/manifests/site.pp"
+puppet_site = "/etc/puppet/manifests/site.pp"
 power_type = ['ilo', 'ipmilan', 'ipmitool', 'rsa']
 
 def write_conf(data):
@@ -35,9 +34,6 @@ def write_conf(data):
     # 打开文件
     dns_conf_content = open(dns_conf, "a+")
     dhcp_hosts_conf_content = open(dhcp_hosts_conf, "a+")
-    puppet_nodes_conf_content = open(puppet_nodes_conf, "a+")
-    puppet_site_conf_content = open(puppet_site_conf)
-    site_content = puppet_site_conf_content.read()
     dns_content = dns_conf_content.read()
     dhcp_content = dhcp_hosts_conf_content.read()
 
@@ -53,7 +49,7 @@ def write_conf(data):
         dns_conf_content.write("%s %s\n" % (node_info["ip"], 
                                     node_info["hostname"]))
         # 把 IP、HOSTNAME、MAC 写入到 DHCP 配置文件，做地址绑定
-        dhcp_hosts_conf_content.write("dhcp-host=%s, %s, %s\n" % 
+        dhcp_hosts_conf_content.write("dhcp-host=%s,%s,%s\n" % 
             (node_info["ip"], node_info["hostname"], node_info["mac"]))
 
         # 配置了远控卡信息
@@ -86,7 +82,7 @@ def write_conf(data):
         class_order = 'Class["all-sources"]'
         for types in node_info["type"]:
             class_order += ' -> Class["%s"]' % types
-
+                
         # 拿到节点需要 include 的模块
         include_module = 'include all-sources, '
         for types in node_info["type"]:
@@ -94,38 +90,59 @@ def write_conf(data):
             if types != node_info["type"][-1]:
                 include_module += ', '
 
-        # 写入到 Puppet 节点角色配置文件中
-        puppet_nodes_conf_content.write("node '%s' { \n\t%s\n\t%s\n}\n\n" % 
-                            (node_info["hostname"], class_order, include_module))
+        # 准备写入到 Puppet 节点角色配置文件中
+        puppet_nodes_conf = open('/etc/puppet/manifests/nodes/'+node_info["hostname"]+'.pp', 'w')
+
+        # 如果 mysql 或 rabbitmq 单独部署
+        if ['mysql'] == node_info['type'] or ['rabbitmq'] == node_info['type']:
+            puppet_nodes_conf.write("node '%s' { \n\tinclude %s\n}" % 
+                                                    (node_info["hostname"],
+                                                     node_info['type'][0]))
+
+        # 如果 mysql 和 rabbitmq 部署在一台机器上
+        elif ('mysql' and 'rabbitmq' in node_info['type']) and \
+                                     len(node_info['type']) == 2:
+
+            puppet_nodes_conf.write("node '%s' { \n\tinclude %s, %s\n}" % 
+                                                    (node_info["hostname"], 
+                                                     node_info['type'][0], 
+                                                     node_info['type'][1]))
+
+        # 其它组件默认依赖 all-sources 模块
+        else:
+            puppet_nodes_conf.write("node '%s' { \n\t%s\n\t%s\n}" % 
+                                                     (node_info["hostname"],
+                                                      class_order,
+                                                      include_module))
+        puppet_nodes_conf.close()
 
         # 修改 puppet site.pp 相关节点 IP 地址
+        
         if 'mysql' in node_info["type"]:
-            site_content = re.sub("%mysql%", node_info["hostname"], site_content)
+            os.system("sed -i '/^$mysql_host.*$/ s/=.*$/= \"%s\"/g' %s" %
+                                   (node_info['hostname'], puppet_site))
 
         if 'rabbitmq' in node_info["type"]:
-          site_content = re.sub("%rabbit%", node_info["hostname"], site_content)
+            os.system("sed -i '/^$rabbit_host.*$/ s/=.*$/= \"%s\"/g' %s" %
+                                    (node_info['hostname'], puppet_site))
 
         if 'keystone' in node_info["type"]:
-          site_content = re.sub("%keystone%", node_info["hostname"], site_content)
-
-        if 'cinder' in node_info["type"]:
-          site_content = re.sub("%cinder%", node_info["hostname"], site_content)
+            os.system("sed -i '/^$keystone_host.*$/ s/=.*$/= \"%s\"/g' %s" %
+                                     (node_info['hostname'], puppet_site))
 
         if 'glance' in node_info["type"]:
-          site_content = re.sub("%glance%", node_info["hostname"], site_content)
+            os.system("sed -i '/^$glance_host.*$/ s/=.*$/= \"%s\"/g' %s" %
+                                    (node_info['hostname'], puppet_site))
 
         if 'nova-control' in node_info["type"]:
-            site_content = re.sub("%nova%", node_info["ip"], site_content)
+            os.system("sed -i '/^$nova_my_ip.*$/ s/=.*$/= \"%s\"/g' %s" %
+                                          (node_info['ip'], puppet_site))
 
-    # 把 site.pp 修改完的内容写入到文件        
-    open(puppet_site_conf, "wb").write(site_content)
-
-    #关闭文件
+    # 关闭文件
     dns_conf_content.close()
     dhcp_hosts_conf_content.close()
-    puppet_nodes_conf_content.close()
-    puppet_site_conf_content.close()
 
+    # 重启服务
     os.system("/etc/init.d/dnsmasq restart > /dev/null 2>&1; /etc/init.d/cobbler restart > /dev/null 2>&1")
     print 'Done!'
     return 'Done!'
