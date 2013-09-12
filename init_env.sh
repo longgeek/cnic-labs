@@ -101,7 +101,7 @@ auto_replaces()
 {
     OLD_IP=$(grep next_server /etc/cobbler/settings | awk '{print $2}')
     OLD_DHCP_RANGE=$(grep dhcp-range /etc/cobbler/dnsmasq.template | awk -F= '{print $2}' | awk -F, '{print $1}')
-    OLD_HOSTNAME=$(grep server= /etc/puppet/puppet.conf | awk -F= '{print $2}')
+    OLD_HOSTNAME=$(grep $OLD_IP /etc/hosts | awk '{print $2}')
     sed -i "s/127.0.1.1.*$/127.0.1.1       $HOST_NAME $(echo $HOST_NAME|awk -F. '{print $1}')/g" /etc/hosts
     cat > /etc/puppet/autosign.conf << _GEEK_
 $HOST_NAME
@@ -125,6 +125,7 @@ _GEEK_
         find $i | xargs grep $OLD_HOSTNAME 2> /dev/null | awk -F: '{print $1}' |uniq
     done)
 
+    echo $REPLACE_FILE_HOSTNAME > /tmp/a.txt
     for i in $REPLACE_FILE_HOSTNAME;
     do
         sed -i "s/$OLD_HOSTNAME/$HOST_NAME/g" $i        
