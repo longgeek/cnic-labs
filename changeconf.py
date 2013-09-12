@@ -16,6 +16,7 @@ __author__ = [
 import os
 import sys
 import re
+import shutil
 
 if len(sys.argv) != 2:
     print "Missing or extra positional parameters!"
@@ -31,6 +32,22 @@ def write_conf(data):
 
     """本函数通过传递参数来添加节点相关的信息，来修改 DNS、DHCP、PUPPET 和 Cobbler 配置文件."""
 
+    # 去掉重复的 ip 或 hostname 或 mac
+    for node_info in data:
+        for i in [node_info["ip"], node_info["hostname"], node_info["mac"]]:
+            for j in [dns_conf, dhcp_hosts_conf]:
+                os.system("sed -i '/%s/d' %s" % (i, j))
+
+        # 去掉重复的 cobbler system
+        cobbler_system_list = os.popen("cobbler system list | awk '{print $1}'").read().rstrip().split("\n")
+        if cobbler_system_list != ['']:
+            for system in cobbler_system_list:
+                system_file = open("/var/lib/cobbler/config/systems.d/"+system+".json", "r")
+                system_file_content = system_file.read()
+                system_file.close()
+                if node_info["ip"] or node_info["hostname"] or node_info["mac"] in system_file_content:
+                    os.system("cobbler system remove --name %s" % system)
+               
     # 打开文件
     dns_conf_content = open(dns_conf, "a+")
     dhcp_hosts_conf_content = open(dhcp_hosts_conf, "a+")
@@ -39,11 +56,6 @@ def write_conf(data):
 
     # 遍历 json 数据
     for node_info in data:
-        for i in [node_info["ip"], node_info["hostname"], node_info["mac"]]:
-            for j in [dns_content, dhcp_content]:
-                if i in j:
-                    print "NOTE: Data record already exists, Please check the input!"
-                    return "NOTE: Data record already exists, Please check the input!"
         # 拿到 IP 和 HOSTNAME 写入到 DNS 配置文件
         print node_info['ip'], node_info['hostname']
         dns_conf_content.write("%s %s\n" % (node_info["ip"], 
