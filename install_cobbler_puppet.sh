@@ -173,10 +173,7 @@ server=$(hostname)
 runinterval=$AGENT_UP_TIME" >> /etc/puppet/puppet.conf
 sed -i 's/-q -y/-q -y --force-yes/g' /usr/lib/ruby/1.8/puppet/provider/package/apt.rb
 sed -i 's/#net.ipv4.ip_forward=1/net.ipv4.ip_forward=1/g' /etc/sysctl.conf
-sed -i 's/server 0.ubuntu.pool.ntp.org//g' /etc/ntp.conf                                                                                               
-sed -i 's/server 1.ubuntu.pool.ntp.org//g' /etc/ntp.conf                                                                                               
-sed -i 's/server 2.ubuntu.pool.ntp.org//g' /etc/ntp.conf                                                                                               
-sed -i 's/server 3.ubuntu.pool.ntp.org//g' /etc/ntp.conf                                                                                               
+sed -i '/ubuntu.pool.ntp.org/d' /etc/ntp.conf
 sed -i "s/server ntp.ubuntu.com/server $IPADDR/g" /etc/ntp.conf
 /etc/init.d/ntp stop                                                                                                                                   
 ntpdate $IPADDR
