@@ -27,12 +27,12 @@ class mysql {
     }
 
     exec { "mysqldb":
-        command => "mysql -uroot -p${mysql_root_password} -e \"create database ${keystone_db_name}; \
-                                                               create database ${glance_db_name}; \
-                                                               create database ${cinder_db_name}; \
-                                                               create database ${horizon_db_name}; \
-                                                               create database ${monitor_db_name}; \
-                                                               create database ${nova_db_name};\"; \
+        command => "mysql -uroot -p${mysql_root_password} -e \"create database ${keystone_db_name} default character set utf8; \
+                                                               create database ${glance_db_name} default character set utf8; \
+                                                               create database ${cinder_db_name} default character set utf8; \
+                                                               create database ${horizon_db_name} default character set utf8; \
+                                                               create database ${monitor_db_name} default character set utf8; \
+                                                               create database ${nova_db_name} default character set utf8;\"; \
                     mysql -uroot -p${mysql_root_password} -e \"grant all on ${keystone_db_name}.* to '${keystone_db_user}'@'%' identified by '${keystone_db_password}'; \
                                                                grant all on ${glance_db_name}.* to '${glance_db_user}'@'%' identified by '${glance_db_password}'; \
                                                                grant all on ${cinder_db_name}.* to '${cinder_db_user}'@'%' identified by '${cinder_db_password}'; 
