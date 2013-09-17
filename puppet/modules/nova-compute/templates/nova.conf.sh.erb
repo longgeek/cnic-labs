@@ -2,7 +2,7 @@ IPADDR=$(ifconfig eth0 | grep 'inet addr' | awk -F: '{print $2}' | awk '{print $
 
 if [ "$IPADDR" = "" ]
 then
-    IPADDR=$(ip a | grep br100 | grep inet | grep -v `ifconfig br100 | grep Bcast | awk -F: '{print $3}' | awk '{print $1}'` | awk -F'/' '{print $1}' | awk '{print $2}')
+    IPADDR=$(ip a | grep br100 | grep inet | grep -v `ifconfig br100 | grep Bcast | awk -F: '{print $3}' | awk '{print $1}'` | awk -F'/' '{print $1}' | awk '{print $2}'| tail -n 1)
 fi
 
 cat > /etc/nova/nova.conf << _GEEK_
@@ -70,5 +70,6 @@ firewall_driver = nova.virt.libvirt.firewall.IptablesFirewallDriver
 scheduler_host_manager = nova.scheduler.baremetal_host_manager.BaremetalHostManager
 notification_topics = notifications
 notification_driver = nova.openstack.common.notifier.rabbit_notifier
+identity_endpoint = http://<%= keystone_host %>/35357/v2.0
 _GEEK_
 chown nova:nova /etc/nova/nova.conf
