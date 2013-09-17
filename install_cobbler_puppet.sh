@@ -170,7 +170,8 @@ sed -i 's/no/yes/g' /etc/default/puppet
 echo "[main]
 server=$(hostname)
 [agent]
-runinterval=$AGENT_UP_TIME" >> /etc/puppet/puppet.conf
+runinterval=$AGENT_UP_TIME
+report = true" >> /etc/puppet/puppet.conf
 sed -i 's/-q -y/-q -y --force-yes/g' /usr/lib/ruby/1.8/puppet/provider/package/apt.rb
 sed -i 's/#net.ipv4.ip_forward=1/net.ipv4.ip_forward=1/g' /etc/sysctl.conf
 sed -i '/ubuntu.pool.ntp.org/d' /etc/ntp.conf
