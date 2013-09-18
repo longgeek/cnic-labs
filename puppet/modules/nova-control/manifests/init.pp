@@ -110,8 +110,8 @@ class nova-control {
     }
 
     # config
-    file { "/etc/nova/nova.conf":
-        content => template("nova-control/nova.conf.erb"),
+    file { "/etc/nova/rootwrap.conf":
+        content => template("nova-control/rootwrap.conf.erb"),
         owner => "nova",
         group => "nova",
         notify => Exec["nova db sync"],
@@ -124,8 +124,8 @@ class nova-control {
         notify => Exec["nova db sync"],
     }
 
-    file { "/etc/nova/rootwrap.conf":
-        content => template("nova-control/rootwrap.conf.erb"),
+    file { "/etc/nova/nova.conf":
+        content => template("nova-control/nova.conf.erb"),
         owner => "nova",
         group => "nova",
         notify => Exec["nova db sync"],
@@ -150,6 +150,7 @@ class nova-control {
     exec { "create fixed_ips":
         command => "nova-manage network create private --fixed_range_v4=${fixed_range} --num_networks=1 --bridge=br100 --bridge_interface=${flat_interface} --network_size=${network_size} --multi_host=T && mkdir /etc/nova/.fixed_ips",
         path => $command_path,
+        require => Exec["nova db sync"],
         creates => "/etc/nova/.fixed_ips",
     }
 }
