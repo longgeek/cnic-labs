@@ -2,15 +2,22 @@ class horizon {
 
     package { ["apache2", "memcached", "python-memcache", "nodejs", "libapache2-mod-wsgi", "python-redis", "gettext"]:
         ensure => installed,
-        notify => Exec["Add admin_token"],
+        notify => File["$source_dir/horizon/openstack_dashboard/settings.py"],
+    }
+ 
+    file { "$source_dir/horizon/openstack_dashboard/settings.py":
+        content => template("horizon/settings.py.erb"),
+        owner => 'apache',
+        group => 'apache',
+        mode => 644,
+        notify => Exec["chinese"],
     }
 
-    exec { "Add admin_token":
-        command => "echo ADMIN_TOKEN = $admin_token >> $source_dir/horizon/openstack_dashboard/settings.py; \
-                    django-admin.py compilemessages -l zh_CN",
+    exec { "chinese":
+        command => "django-admin.py compilemessages -l zh_CN",
         cwd => "$source_dir/horizon/horizon",
         path => $command_path,
-        unless => "grep ^ADMIN_TOKEN $source_dir/horizon/openstack_dashboard/settings.py",
+        unless => "ls $source_dir/horizon/horizon/locale/zh_CN/LC_MESSAGES/django.mo",
         notify => File["$source_dir/horizon/openstack_dashboard/local/local_settings.py"],
     }
 
