@@ -1,19 +1,14 @@
 class cinder {
+    exec { "cinder upstart":
+        command => "ln -s /lib/init/upstart-up /etc/init.d/cinder-api; \
+                    ln -s /lib/init/upstart-up /etc/init.d/cinder-scheduler; \
+                    ln -s /lib/init/upstart-up /etc/init.d/cinder-volume",
+        path => $command_path,
+        unless => "ls /etc/init.d/cinder-volume",
+        notify => File["/etc/init/cinder-api.conf"],
+    }
     # All cinder init.d/ scripts
     file { 
-        "/etc/init.d/cinder-api":
-            source => "puppet:///files/contrib/cinder/cinder-api",
-            mode => "0755";
-
-        "/etc/init.d/cinder-scheduler":
-            source => "puppet:///files/contrib/cinder/cinder-scheduler",
-            mode => "0755";
-
-        "/etc/init.d/cinder-volume":
-            source => "puppet:///files/contrib/cinder/cinder-volume",
-            mode => "0755";
-
-
         "/etc/init/cinder-api.conf":
             source => "puppet:///files/contrib/cinder/cinder-api.conf",
             mode => "0644";

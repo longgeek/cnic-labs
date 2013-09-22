@@ -1,15 +1,13 @@
 class glance {
+    exec { "glance upstart":
+        command => "ln -s /lib/init/upstart-job /etc/init.d/glance-api; \
+                    ln -s /lib/init/upstart-job /etc/init.d/glance-registry",
+        path => $command_path,
+        unless => "ls /etc/init.d/glance-registry",
+        notify => File["/etc/init/glance-api.conf"],
+    }
         
     file { 
-        "/etc/init.d/glance-api":
-            source => "puppet:///files/contrib/glance/glance-api",
-            mode => "0755";
-
-        "/etc/init.d/glance-registry":
-            source => "puppet:///files/contrib/glance/glance-registry",
-            mode => "0755";
-
-
         "/etc/init/glance-api.conf":
             source => "puppet:///files/contrib/glance/glance-api.conf",
             mode => "0644";

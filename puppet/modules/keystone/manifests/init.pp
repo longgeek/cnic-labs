@@ -1,10 +1,12 @@
 class keystone {
+    exec { "keystone upstart":
+        command => "ln -s /lib/init/upstart-job /etc/init.d/keystone",
+        path => $command_path,
+        unless => "ls /etc/init.d/keystone",
+        notify => File["/etc/init/keystone.conf"],
+    }
 
     file { 
-        "/etc/init.d/keystone":
-            source => "puppet:///files/contrib/keystone/keystone",
-            mode => "0755";
-
         "/etc/init/keystone.conf":
             source => "puppet:///files/contrib/keystone/keystone.conf",
             mode => "0644";
