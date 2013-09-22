@@ -16,7 +16,7 @@ reserved_host_memory_mb = 1024
 compute_fill_first_cost_fn_weight = -1.0
 dhcpbridge_flagfile = /etc/nova/nova.conf
 force_dhcp_release = True
-fixed_range = 10.0.0.0/20
+fixed_range = <%= fixed_range %>
 s3_host = <%= nova_s3_host %>
 s3_port = <%= nova_s3_port %>
 osapi_compute_extension = nova.api.openstack.compute.contrib.standard_extensions

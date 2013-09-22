@@ -1,43 +1,26 @@
 class nova-control {
+    exec { "nova-control upstart":
+        command => "ln -s /lib/init/upstart-job /etc/init.d/nova-api; \
+                    ln -s /lib/init/upstart-job /etc/init.d/nova-scheduler; \
+                    ln -s /lib/init/upstart-job /etc/init.d/nova-compute; \
+                    ln -s /lib/init/upstart-job /etc/init.d/nova-network; \
+                    ln -s /lib/init/upstart-job /etc/init.d/nova-cert; \
+                    ln -s /lib/init/upstart-job /etc/init.d/nova-console; \
+                    ln -s /lib/init/upstart-job /etc/init.d/nova-consoleauth; \
+                    ln -s /lib/init/upstart-job /etc/init.d/nova-novncproxy; \
+                    ln -s /lib/init/upstart-job /etc/init.d/nova-xvpvncproxy",
+        path => $command_path,
+        unless => "ls /etc/init.d/nova-xvpvncproxy",
+        notify => File["/etc/init/libvirt-bin.conf"],
+    }
 
     file { 
-        "/etc/init.d/nova-api":
-            source => "puppet:///files/contrib/nova/nova-api",
-            mode => "0755";
-
-        "/etc/init.d/nova-scheduler":
-            source => "puppet:///files/contrib/nova/nova-scheduler",
-            mode => "0755";
-
-        "/etc/init.d/nova-compute":
-            source => "puppet:///files/contrib/nova/nova-compute",
-            mode => "0755";
-
-        "/etc/init.d/nova-network":
-            source => "puppet:///files/contrib/nova/nova-network",
-            mode => "0755";
-
-        "/etc/init.d/nova-cert":
-            source => "puppet:///files/contrib/nova/nova-cert",
-            mode => "0755";
-
-        "/etc/init.d/nova-console":
-            source => "puppet:///files/contrib/nova/nova-console",
-            mode => "0755";
-
-        "/etc/init.d/nova-consoleauth":
-            source => "puppet:///files/contrib/nova/nova-consoleauth",
-            mode => "0755";
-
-        "/etc/init.d/nova-novncproxy":
-            source => "puppet:///files/contrib/nova/nova-novncproxy",
-            mode => "0755";
-
-        "/etc/init.d/nova-xvpvncproxy":
-            source => "puppet:///files/contrib/nova/nova-xvpvncproxy",
-            mode => "0755";
 
         # CONF
+        "/etc/init/libvirt-bin.conf":
+            source => "puppet:///files/contrib/nova/libvirt-bin.conf",
+            mode => "0755";
+
         "/etc/init/nova-api.conf":
             source => "puppet:///files/contrib/nova/nova-api.conf",
             mode => "0644";
@@ -85,15 +68,42 @@ class nova-control {
 
     package { $nova_apt_requires:
         ensure => installed,
+        notify => File["$source_dir/libvirt-$libvirt_version.tar.gz"],
+    }
+
+    file { "$source_dir/libvirt-$libvirt_version.tar.gz":
+        source => "puppet:///files/libvirt-$libvirt_version.tar.gz",
+        notify => Package["gcc", "make", "pkg-config", "libgnutls-dev", "libdevmapper-dev", "libcurl4-gnutls-dev", "libpciaccess-dev", "libnl-dev", "pm-utils", "ebtables", "dnsmasq-base"],
+    }
+
+    package { ["gcc", "make", "pkg-config", "libgnutls-dev", "libdevmapper-dev", "libcurl4-gnutls-dev", "libpciaccess-dev", "libnl-dev", "pm-utils", "ebtables", "dnsmasq-base"]:
+        ensure => installed,
+        require => File["$source_dir/libvirt-$libvirt_version.tar.gz"],
+        notify => Exec["make libvirt"],
+    }
+
+    exec { "make libvirt":
+        path => $command_path,
+        command => "pkg-config --modversion libnl-1; \
+                    cd $source_dir; \
+                    tar zxvf libvirt-$libvirt_version.tar.gz; \
+                    cd libvirt-$libvirt_version; \
+                    ./configure --prefix=/usr --localstatedir=/var --sysconfdir=/etc ; \
+                    make; \
+                    make install; \
+                    [ -e /etc/init.d/libvirt-bin ] && rm -f /etc/init.d/libvirt-bin; \
+                    ln -s /lib/init/upstart-job /etc/init.d/libvirt-bin",
+        refreshonly => true,
         notify => Exec["libvirt live migration"],
     }
 
     exec { "libvirt live migration":
         command => "sed -i 's/#listen_tls/listen_tls/' /etc/libvirt/libvirtd.conf; \
                     sed -i 's/#listen_tcp/listen_tcp/' /etc/libvirt/libvirtd.conf; \
+                    sed -i 's/#unix_sock_group = \"libvirt\"/unix_sock_group = \"libvirtd\"/g' /etc/libvirt/libvirtd.conf; \
+                    sed -i 's/#unix_sock_rw_perms = \"0770\"/unix_sock_rw_perms = \"0770\"/g' /etc/libvirt/libvirtd.conf; \
+                    sed -i 's/#listen_tcp/listen_tcp/' /etc/libvirt/libvirtd.conf; \
                     sed -i 's/^.auth_tcp.*$/auth_tcp = \"none\"/' /etc/libvirt/libvirtd.conf; \
-                    sed -i 's/exec \/usr\/sbin\/libvirtd \$libvirtd_opts/exec \/usr\/sbin\/libvirtd -d -l/' /etc/init/libvirt-bin.conf; \
-                    sed -i 's/libvirtd_opts=\"-d\"/libvirtd_opts=\"-d -l\"/' /etc/default/libvirt-bin; \
                     grep nbd /etc/modules || echo nbd >> /etc/modules; \
                     modprobe nbd; \
                     /etc/init.d/libvirt-bin restart",
@@ -144,13 +154,20 @@ class nova-control {
                     /etc/init.d/nova-xvpvncproxy restart",
         path => $command_path,
         refreshonly => true,
+        notify => Service["nova-api", "nova-cert", "nova-scheduler", "nova-network", "nova-compute", "nova-consoleauth", "nova-console", "nova-novncproxy", "nova-xvpvncproxy"],
+    }
+
+    service { ["nova-api", "nova-cert", "nova-scheduler", "nova-network", "nova-compute", "nova-consoleauth", "nova-console", "nova-novncproxy", "nova-xvpvncproxy"]:
+        ensure => "running",
+        enable => true,
+        hasstatus => true,
+        hasrestart => true,
         notify => Exec["create fixed_ips"],
     }
 
     exec { "create fixed_ips":
         command => "nova-manage network create private --fixed_range_v4=${fixed_range} --num_networks=1 --bridge=br100 --bridge_interface=${flat_interface} --network_size=${network_size} --multi_host=T && mkdir /etc/nova/.fixed_ips",
         path => $command_path,
-        require => Exec["nova db sync"],
         creates => "/etc/nova/.fixed_ips",
     }
 }
