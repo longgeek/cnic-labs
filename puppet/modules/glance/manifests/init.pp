@@ -10,10 +10,12 @@ class glance {
     file { 
         "/etc/init/glance-api.conf":
             source => "puppet:///files/contrib/glance/glance-api.conf",
+            require => Exec["glance upstart"],
             mode => "0644";
 
         "/etc/init/glance-registry.conf":
             source => "puppet:///files/contrib/glance/glance-registry.conf",
+            require => File["/etc/init/glance-api.conf"],
             mode => "0644";
     }   
 
@@ -47,6 +49,14 @@ class glance {
                     /etc/init.d/glance-registry restart",
         path => $command_path,
         refreshonly => true,
+        notify => Service["glance-api", "glance-registry"],
+    }
+
+    service { ["glance-api", "glance-registry"]:
+        ensure => "running",
+        enable => true,
+        hasstatus => true,
+        hasrestart => true,
         notify => File["/etc/glance/cirros-0.3.0-x86_64-disk.img"],
     }
 
@@ -56,8 +66,8 @@ class glance {
     }
 
     exec { "glance_add": 
-        command => "glance --os_username=admin --os_password=${admin_password} --os_tenant_name=admin --os_auth_url=http://${keystone_host}:5000/v2.0 image-create --name='cirros-0.3.0' --public --container-format=ovf --disk-format=qcow2 < /etc/glance/cirros-0.3.0-x86_64-disk.img; touch /etc/glance/.glance_add",
+        command => "glance --os_username=admin --os_password=${admin_password} --os_tenant_name=admin --os_auth_url=http://${keystone_host}:5000/v2.0 image-create --name='cirros-0.3.0' --public --container-format=ovf --disk-format=qcow2 < /etc/glance/cirros-0.3.0-x86_64-disk.img && touch /etc/glance/.glance_add",
         path => $command_path,
-        creates => '/etc/glance/.glance_add'
+        creates => '/etc/glance/.glance_add',
     }
 }

@@ -1,8 +1,8 @@
 class cinder {
     exec { "cinder upstart":
-        command => "ln -s /lib/init/upstart-up /etc/init.d/cinder-api; \
-                    ln -s /lib/init/upstart-up /etc/init.d/cinder-scheduler; \
-                    ln -s /lib/init/upstart-up /etc/init.d/cinder-volume",
+        command => "ln -s /lib/init/upstart-job /etc/init.d/cinder-api; \
+                    ln -s /lib/init/upstart-job /etc/init.d/cinder-scheduler; \
+                    ln -s /lib/init/upstart-job /etc/init.d/cinder-volume",
         path => $command_path,
         unless => "ls /etc/init.d/cinder-volume",
         notify => File["/etc/init/cinder-api.conf"],
@@ -11,12 +11,15 @@ class cinder {
     file { 
         "/etc/init/cinder-api.conf":
             source => "puppet:///files/contrib/cinder/cinder-api.conf",
+            require => Exec["cinder upstart"],
             mode => "0644";
         "/etc/init/cinder-scheduler.conf":
             source => "puppet:///files/contrib/cinder/cinder-scheduler.conf",
+            require => File["/etc/init/cinder-api.conf"],
             mode => "0644";
         "/etc/init/cinder-volume.conf":
             source => "puppet:///files/contrib/cinder/cinder-volume.conf",
+            require => File["/etc/init/cinder-scheduler.conf"],
             mode => "0644";
     }   
 
@@ -74,5 +77,13 @@ class cinder {
                     /etc/init.d/cinder-volume restart",
         path => $command_path,
         refreshonly => true,
+        notify => Service["cinder-api", "cinder-scheduler", "cinder-volume"],
+    }
+
+    service { ["cinder-api", "cinder-scheduler", "cinder-volume"]:
+        ensure => "running",
+        enable => true,
+        hasstatus => true,
+        hasrestart => true,
     }
 }

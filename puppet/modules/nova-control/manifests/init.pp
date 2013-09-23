@@ -8,6 +8,8 @@ class nova-control {
                     ln -s /lib/init/upstart-job /etc/init.d/nova-console; \
                     ln -s /lib/init/upstart-job /etc/init.d/nova-consoleauth; \
                     ln -s /lib/init/upstart-job /etc/init.d/nova-novncproxy; \
+                    [ -e /etc/init.d/libvirt-bin ] && rm -f /etc/init.d/libvirt-bin; \
+                    ln -s /lib/init/upstart-job /etc/init.d/libvirt-bin; \
                     ln -s /lib/init/upstart-job /etc/init.d/nova-xvpvncproxy",
         path => $command_path,
         unless => "ls /etc/init.d/nova-xvpvncproxy",
@@ -19,42 +21,52 @@ class nova-control {
         # CONF
         "/etc/init/libvirt-bin.conf":
             source => "puppet:///files/contrib/nova/libvirt-bin.conf",
+            require => Exec["nova-control upstart"],
             mode => "0755";
 
         "/etc/init/nova-api.conf":
             source => "puppet:///files/contrib/nova/nova-api.conf",
+            require => File["/etc/init/libvirt-bin.conf"],
             mode => "0644";
 
         "/etc/init/nova-scheduler.conf":
             source => "puppet:///files/contrib/nova/nova-scheduler.conf",
+            require => File["/etc/init/nova-api.conf"],
             mode => "0644";
 
         "/etc/init/nova-compute.conf":
             source => "puppet:///files/contrib/nova/nova-compute.conf",
+            require => File["/etc/init/nova-scheduler.conf"],
             mode => "0644";
 
         "/etc/init/nova-network.conf":
             source => "puppet:///files/contrib/nova/nova-network.conf",
+            require => File["/etc/init/nova-compute.conf"],
             mode => "0644";
 
         "/etc/init/nova-cert.conf":
             source => "puppet:///files/contrib/nova/nova-cert.conf",
+            require => File["/etc/init/nova-network.conf"],
             mode => "0644";
 
         "/etc/init/nova-console.conf":
             source => "puppet:///files/contrib/nova/nova-console.conf",
+            require => File["/etc/init/nova-cert.conf"],
             mode => "0644";
 
         "/etc/init/nova-consoleauth.conf":
             source => "puppet:///files/contrib/nova/nova-consoleauth.conf",
+            require => File["/etc/init/nova-console.conf"],
             mode => "0644";
 
         "/etc/init/nova-novncproxy.conf":
             source => "puppet:///files/contrib/nova/nova-novncproxy.conf",
+            require => File["/etc/init/nova-consoleauth.conf"],
             mode => "0644";
 
         "/etc/init/nova-xvpvncproxy.conf":
             source => "puppet:///files/contrib/nova/nova-xvpvncproxy.conf",
+            require => File["/etc/init/nova-novncproxy.conf"],
             mode => "0644";
     }   
 
@@ -68,31 +80,28 @@ class nova-control {
 
     package { $nova_apt_requires:
         ensure => installed,
-        notify => File["$source_dir/libvirt-$libvirt_version.tar.gz"],
-    }
-
-    file { "$source_dir/libvirt-$libvirt_version.tar.gz":
-        source => "puppet:///files/libvirt-$libvirt_version.tar.gz",
         notify => Package["gcc", "make", "pkg-config", "libgnutls-dev", "libdevmapper-dev", "libcurl4-gnutls-dev", "libpciaccess-dev", "libnl-dev", "pm-utils", "ebtables", "dnsmasq-base"],
     }
 
     package { ["gcc", "make", "pkg-config", "libgnutls-dev", "libdevmapper-dev", "libcurl4-gnutls-dev", "libpciaccess-dev", "libnl-dev", "pm-utils", "ebtables", "dnsmasq-base"]:
         ensure => installed,
-        require => File["$source_dir/libvirt-$libvirt_version.tar.gz"],
-        notify => Exec["make libvirt"],
+        notify => File["$source_dir/libvirt-$libvirt_version.tar.gz"],
     }
 
-    exec { "make libvirt":
-        path => $command_path,
+    file { "$source_dir/libvirt-$libvirt_version.tar.gz":
+        source => "puppet:///files/libvirt-$libvirt_version.tar.gz",
+        notify => Exec["configure libvirt"],
+    }
+
+    exec { "configure libvirt":
         command => "pkg-config --modversion libnl-1; \
                     cd $source_dir; \
                     tar zxvf libvirt-$libvirt_version.tar.gz; \
                     cd libvirt-$libvirt_version; \
                     ./configure --prefix=/usr --localstatedir=/var --sysconfdir=/etc ; \
                     make; \
-                    make install; \
-                    [ -e /etc/init.d/libvirt-bin ] && rm -f /etc/init.d/libvirt-bin; \
-                    ln -s /lib/init/upstart-job /etc/init.d/libvirt-bin",
+                    make install",
+        path => $command_path,
         refreshonly => true,
         notify => Exec["libvirt live migration"],
     }

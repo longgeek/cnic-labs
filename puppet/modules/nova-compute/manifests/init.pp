@@ -2,6 +2,8 @@ class nova-compute {
     exec { "nova-compute upstart":
         command => "ln -s /lib/init/upstart-job /etc/init.d/nova-network; \
                     ln -s /lib/init/upstart-job /etc/init.d/nova-compute; \
+                    [ -e /etc/init.d/libvirt-bin ] && rm -f /etc/init.d/libvirt-bin; \
+                    ln -s /lib/init/upstart-job /etc/init.d/libvirt-bin; \
                     ln -s /lib/init/upstart-job /etc/init.d/nova-api-metadata",
         path => $command_path,
         unless => "ls /etc/init.d/nova-api-metadata",
@@ -12,18 +14,22 @@ class nova-compute {
         # CONF
         "/etc/init/libvirt-bin.conf":
             source => "puppet:///files/contrib/nova/libvirt-bin.conf",
+            require => Exec["nova-compute upstart"],
             mode => "0755";
 
         "/etc/init/nova-compute.conf":
             source => "puppet:///files/contrib/nova/nova-compute.conf",
+            require => File["/etc/init/libvirt-bin.conf"],
             mode => "0644";
 
         "/etc/init/nova-api-metadata.conf":
             source => "puppet:///files/contrib/nova/nova-api-metadata.conf",
+            require => File["/etc/init/nova-compute.conf"],
             mode => "0644";
 
         "/etc/init/nova-network.conf":
             source => "puppet:///files/contrib/nova/nova-network.conf",
+            require => File["/etc/init/nova-api-metadata.conf"],
             mode => "0644";
     }   
 
@@ -36,21 +42,20 @@ class nova-compute {
     # Install deb requires
     package { $nova_apt_requires:
         ensure => installed,
-        notify => File["$source_dir/libvirt-$libvirt_version.tar.gz"],
-    }
-
-    file { "$source_dir/libvirt-$libvirt_version.tar.gz":
-        source => "puppet:///files/libvirt-$libvirt_version.tar.gz",
         notify => Package["gcc", "make", "pkg-config", "libgnutls-dev", "libdevmapper-dev", "libcurl4-gnutls-dev", "libpciaccess-dev", "libnl-dev", "pm-utils", "ebtables", "dnsmasq-base"],
     }
 
     package { ["gcc", "make", "pkg-config", "libgnutls-dev", "libdevmapper-dev", "libcurl4-gnutls-dev", "libpciaccess-dev", "libnl-dev", "pm-utils", "ebtables", "dnsmasq-base"]:
         ensure => installed,
-        require => File["$source_dir/libvirt-$libvirt_version.tar.gz"],
-        notify => Exec["make libvirt"],
+        notify => File["$source_dir/libvirt-$libvirt_version.tar.gz"],
     }
 
-    exec { "make libvirt":
+    file { "$source_dir/libvirt-$libvirt_version.tar.gz":
+        source => "puppet:///files/libvirt-$libvirt_version.tar.gz",
+        notify => Exec["configure libvirt"],
+    }
+
+    exec { "configure libvirt":
         path => $command_path,
         command => "pkg-config --modversion libnl-1; \
                     cd $source_dir; \
@@ -58,9 +63,7 @@ class nova-compute {
                     cd libvirt-$libvirt_version; \
                     ./configure --prefix=/usr --localstatedir=/var --sysconfdir=/etc ; \
                     make; \
-                    make install; \
-                    [ -e /etc/init.d/libvirt-bin ] && rm -f /etc/init.d/libvirt-bin; \
-                    ln -s /lib/init/upstart-job /etc/init.d/libvirt-bin",
+                    make install",
         refreshonly => true,
         notify => Exec["libvirt live migration"],
     }
