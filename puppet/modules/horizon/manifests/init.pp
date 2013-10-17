@@ -14,9 +14,9 @@ class horizon {
     }
 
     exec { "chinese":
-        command => "django-admin compilemessages -l zh_CN",
-        path => $command_path,
+        command => "django-admin.py compilemessages -l zh_CN",
         cwd => "$source_dir/horizon/horizon",
+        path => $command_path,
         unless => "ls $source_dir/horizon/horizon/locale/zh_CN/LC_MESSAGES/django.mo",
         notify => File["$source_dir/horizon/openstack_dashboard/local/local_settings.py"],
     }
