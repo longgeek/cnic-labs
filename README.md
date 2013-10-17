@@ -42,3 +42,5 @@ runinterval=5
 开始安装计算节点,计算节点安装完以后：
 #mv /tmp/horizon.conf /etc/apach2/conf.d/
 #/etc/init.d/apache2 restart
+
+创建 vm 分配到控制节点时候，会卡在网络，原因是 nova-network 会启动 dnsmasq 进程，而 dnsmasq 进程被部署服务器占用
