@@ -11,7 +11,7 @@ verbose = <%= nova_log_verbose %>
 debug = <%= nova_log_debug %>
 logdir = /var/log/nova
 lock_path = /var/lock/nova
-state_path = /var/lib/nova
+state_path = <%= source_dir %>/data/nova
 auth_strategy = keystone
 allow_resize_to_same_host = False
 api_paste_config = /etc/nova/api-paste.ini
@@ -45,7 +45,7 @@ rpc_response_timeout = 1200
 disk_cache_model = writeback
 enabled_apis = ec2,osapi_compute,metadata
 volume_api_class = nova.volume.cinder.API
-instances_path = /var/lib/nova/instances
+instances_path = <%= source_dir %>/data/nova/instances
 multi_host = True
 send_arp_for_ha = True
 logging_context_format_string = %(asctime)s %(color)s%(levelname)s %(name)s [[01;36m%(request_id)s [00;36m%(user_name)s %(project_name)s%(color)s] [01;35m%(instance)s%(color)s%(message)s[00m
