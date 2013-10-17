@@ -100,3 +100,7 @@ $monitor_db_user                    = 'monitor'
 $monitor_db_password                = 'monitor'
 ## SWIFT
 $swift_proxy_host                   = $nova_my_ip
+
+## GLUSTERFS
+$glusterfs_version                  = '3.4.0'
+$glusterfs_nodes_list               = '172.16.0.201 172.16.0.202'
