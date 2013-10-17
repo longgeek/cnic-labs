@@ -180,6 +180,45 @@ sed -i "s/server ntp.ubuntu.com/server $IPADDR/g" /etc/ntp.conf
 ntpdate $IPADDR
 /etc/init.d/ntp restart
 /etc/init.d/puppet restart
+
+auto_mount() {
+    df -h | grep /dev/\$device'1' > /dev/null && umount /dev/\$device'1'
+    mkfs.xfs -i size=1024 /dev/\$device'1' -f
+    mount /dev/\$device'1' /opt
+    cat /etc/fstab | grep /dev/\$device'1' > /dev/null && \
+    sed -i "/\$device"1"/d" /etc/fstab
+    echo "/dev/\$device"1" /opt xfs noatime,nodiratime,nobarrier,logbufs=8 0 0" >> /etc/fstab
+}
+
+for device in sdb hdb
+do
+    # 如果设备存在
+    [ -e /dev/\$device ]
+    if [ "\$?" = "0" ]; then
+        # 查看是否已经分区
+        [ -e /dev/\$device'1' ]
+        if [ "\$?" = "0" ]; then
+            auto_mount
+        # 没有分区
+        else
+            # 硬盘大于 2T
+            disk=\$(fdisk -l /dev/\$device | grep "Disk /dev/\$device:" | awk -F': ' '{print \$2}' | awk -F, '{print \$1}')
+            if [ "\$(echo \$disk | awk '{print \$2}')" = 'TB' ]; then
+                if [ "\$(echo \$disk | awk '{print \$1}')" -gt '2' ]; then
+                    parted /dev/\$device -s mklabel msdos
+                    parted /dev/sdb -s mklabel gpt
+                    parted /dev/\$device -s mkpart primary 0 100%
+                    auto_mount
+                fi
+            # 硬盘小于 2T
+            else
+                parted /dev/\$device -s mklabel msdos
+                parted /dev/\$device -s mkpart primary 0 100%
+                auto_mount
+            fi
+        fi
+    fi
+done
 _GEEK_
 
 chmod +x /var/www/post.sh
