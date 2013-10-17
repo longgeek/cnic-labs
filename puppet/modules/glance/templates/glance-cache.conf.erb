@@ -11,7 +11,7 @@ log_file = /var/log/glance/image-cache.log
 use_syslog = False
 
 # Directory that the Image Cache writes data to
-image_cache_dir = /var/lib/glance/image-cache/
+image_cache_dir = <%= source_dir %>/data/glance/image-cache/
 
 # Number of seconds after which we should consider an incomplete image to be
 # stalled and eligible for reaping
@@ -54,7 +54,7 @@ admin_password = <%= service_password %>
 
 # Directory that the Filesystem backend store
 # writes image data to
-filesystem_store_datadir = /var/lib/glance/images/
+filesystem_store_datadir = <%= source_dir %>/data/glance/images/
 
 # ============ Swift Store Options =============================
 

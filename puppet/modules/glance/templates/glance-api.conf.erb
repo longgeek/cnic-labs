@@ -174,7 +174,7 @@ qpid_tcp_nodelay = True
 
 # Directory that the Filesystem backend store
 # writes image data to
-filesystem_store_datadir = /var/lib/glance/images/
+filesystem_store_datadir = <%= source_dir %>/data/glance/images/
 
 # ============ Swift Store Options =============================
 
@@ -300,12 +300,12 @@ scrub_time = 43200
 
 # Directory that the scrubber will use to remind itself of what to delete
 # Make sure this is also set in glance-scrubber.conf
-scrubber_datadir = /var/lib/glance/scrubber
+scrubber_datadir = <%= source_dir %>/data/glance/scrubber
 
 # =============== Image Cache Options =============================
 
 # Base directory that the Image Cache uses
-image_cache_dir = /var/lib/glance/image-cache/
+image_cache_dir = <%= source_dir %>/data/glance/image-cache/
 
 [keystone_authtoken]
 auth_host = <%= keystone_host %>
