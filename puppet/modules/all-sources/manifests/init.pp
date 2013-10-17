@@ -30,7 +30,7 @@ class all-sources {
                     echo 'nova    ALL=(ALL:ALL) NOPASSWD:NOPASSWD:ALL' >> /etc/sudoers; \
                     echo 'StrictHostKeyChecking  no' >> /etc/ssh/ssh_config; \
                     /etc/init.d/ssh restart; \
-                    mkdir -p $source_dir",
+                    mkdir -p $source_dir/data",
         path => $command_path,
         creates => "$source_dir",
         require => Package["git"],
@@ -142,11 +142,11 @@ class all-sources {
         path => $command_path,
         cwd => $source_dir,
         refreshonly => true,
-        notify => File["/etc/glance", "/var/lib/glance/", "/var/run/glance", "/var/log/glance", "/var/lib/glance/images", "/var/lib/glance/image-cache/", "/var/lib/glance/scrubber", "/home/glance"],
+        notify => File["/etc/glance", "$source_dir/data/glance/", "/var/run/glance", "/var/log/glance", "$source_dir/data/glance/images", "$source_dir/data/glance/image-cache/", "$source_dir/data/glance/scrubber", "/home/glance"],
     }   
 
 ## Glance
-    file { ["/etc/glance", "/var/lib/glance/", "/var/run/glance", "/var/log/glance", "/var/lib/glance/images", "/var/lib/glance/image-cache/", "/var/lib/glance/scrubber", "/home/glance"]:
+    file { ["/etc/glance", "$source_dir/data/glance/", "/var/run/glance", "/var/log/glance", "$source_dir/data/glance/images", "$source_dir/data/glance/image-cache/", "$source_dir/data/glance/scrubber", "/home/glance"]:
         ensure => directory,
         owner => "glance",
         notify => File["$source_dir/$glance_source_pack_name"],
@@ -199,11 +199,11 @@ class all-sources {
         path => $command_path,
         cwd => $source_dir,
         refreshonly => true,
-        notify => File["/etc/cinder", "/var/lib/cinder", "/var/log/cinder/", "/var/run/cinder", "/var/lib/cinder/images"],
+        notify => File["/etc/cinder", "$source_dir/data/cinder", "/var/log/cinder/", "/var/run/cinder", "$source_dir/data/cinder/images"],
     }   
 
 ### Cinder
-    file { ["/etc/cinder", "/var/lib/cinder", "/var/log/cinder/", "/var/run/cinder", "/var/lib/cinder/images"]:
+    file { ["/etc/cinder", "$source_dir/data/cinder", "/var/log/cinder/", "/var/run/cinder", "$source_dir/data/cinder/images"]:
         ensure => directory,
         owner => "cinder",
         notify => File["$source_dir/$cinder_source_pack_name"],
@@ -261,7 +261,7 @@ class all-sources {
 
 ### Nova
     # mkdir dir
-    file { ["/etc/nova", "/var/log/nova", "/var/lib/nova", "/var/run/nova", "/var/lib/nova/instances", "/var/lock/nova"]:
+    file { ["/etc/nova", "/var/log/nova", "$source_dir/data/nova", "/var/run/nova", "$source_dir/data/nova/instances", "/var/lock/nova"]:
         ensure => directory,
         owner => "nova",
         require => Exec["untar cinder-client"],
