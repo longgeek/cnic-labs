@@ -9,7 +9,7 @@ logging_default_format_string = %(asctime)s %(color)s%(levelname)s %(name)s [[0
 logging_context_format_string = %(asctime)s %(color)s%(levelname)s %(name)s [[01;36m%(request_id)s [00;36m%(user_id)s %(project_id)s%(color)s] [01;35m%(instance)s%(color)s%(message)s[00m
 rabbit_password = <%= rabbit_password %>
 rabbit_host = <%= rabbit_host %>
-state_path = /var/lib/cinder
+state_path = <%= source_dir %>/data/cinder
 log_dir = /var/log/cinder
 osapi_volume_extension = cinder.api.openstack.volume.contrib.standard_extensions
 root_helper = sudo /usr/local/bin/cinder-rootwrap /etc/cinder/rootwrap.conf
@@ -18,7 +18,7 @@ sql_connection = mysql://<%= cinder_db_user %>:<%= cinder_db_password %>@<%= mys
 iscsi_helper = ietadm
 volume_name_template = volume-%s
 volume_group = <%= cinder_volume_group %>
-volumes_dir = /var/lib/cinder/volumes
+volumes_dir = <%= source_dir %>/data/cinder/volumes
 verbose = <%= cinder_log_verbose %>
 debug = <%= cinder_log_debug %>
 auth_strategy = keystone
