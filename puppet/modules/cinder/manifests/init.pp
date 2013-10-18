@@ -56,12 +56,37 @@ class cinder {
         notify => File["/etc/cinder/cinder.conf"],
     }
 
-    file { "/etc/cinder/cinder.conf":
-        content => template("cinder/cinder.conf.erb"),
-        owner => "cinder",
-        group => "cinder",
-        notify => Exec["cinder db_sync"],
-    }
+    if $cinder_volume_format == "glusterfs" {
+        file { "/etc/cinder/cinder.conf":
+            content => template("cinder/glusterfs.cinder.conf.erb"),
+            owner => "cinder",
+            group => "cinder",
+            notify => File["/etc/cinder/glusterfs_shares.sh"],
+        }
+        
+        file { "/etc/cinder/glusterfs_shares.sh":
+            content => template("cinder/glusterfs_shares.sh.erb"),
+            owner => "cinder",
+            group => "cinder",
+            mode => 755,
+            notify => Exec["sh glusterfs_shares"],
+        }
+        exec { "sh glusterfs_shares":
+            command => "sh /etc/cinder/glusterfs_shares.sh",
+            path => $command_path,
+            refreshonly => true,
+            notify => Exec["cinder db_sync"],
+        }
+
+    } else {
+        file { "/etc/cinder/cinder.conf":
+            content => template("cinder/cinder.conf.erb"),
+            owner => "cinder",
+            group => "cinder",
+            notify => Exec["cinder db_sync"],
+        }
+        
+           }
 
     file { "/etc/cinder/api-paste.ini":
         content => template("cinder/api-paste.ini.erb"),
