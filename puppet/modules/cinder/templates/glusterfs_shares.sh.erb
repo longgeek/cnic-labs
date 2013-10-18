@@ -1,0 +1,8 @@
+#!/bin/bash
+
+touch /etc/cinder/glusterfs_shares
+> /etc/cinder/glusterfs_shares
+for i in <%= glusterfs_nodes_list %>
+do
+    echo $i:eccp-cinder >> /etc/cinder/glusterfs_shares
+done
