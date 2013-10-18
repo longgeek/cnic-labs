@@ -199,11 +199,11 @@ class all-sources {
         path => $command_path,
         cwd => $source_dir,
         refreshonly => true,
-        notify => File["/etc/cinder", "$source_dir/data/cinder", "/var/log/cinder/", "/var/run/cinder", "$source_dir/data/cinder/images"],
+        notify => File["/etc/cinder", "$source_dir/data/cinder", "/var/log/cinder/", "/var/run/cinder", "$source_dir/data/cinder/volumes"],
     }   
 
 ### Cinder
-    file { ["/etc/cinder", "$source_dir/data/cinder", "/var/log/cinder/", "/var/run/cinder", "$source_dir/data/cinder/images"]:
+    file { ["/etc/cinder", "$source_dir/data/cinder", "/var/log/cinder/", "/var/run/cinder", "$source_dir/data/cinder/volumes"]:
         ensure => directory,
         owner => "cinder",
         notify => File["$source_dir/$cinder_source_pack_name"],
