@@ -15,6 +15,6 @@ class glusterfs::mount {
     exec { "mount glusterfs":
         command => "python $source_dir/mount_glusterfs.py",
         path => $command_path,
-        unless => '[ "`df -h | grep eccp | wc -l`" -eq "3" ]',
+        unless => '[ "`df -h | grep eccp | wc -l`" -ge "3" ]',
     }
 }
