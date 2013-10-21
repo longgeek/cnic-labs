@@ -26,6 +26,7 @@ COMPUTE_IP=$KEYSTONE_IP
 EC2_IP=$KEYSTONE_IP
 GLANCE_IP=$KEYSTONE_IP
 VOLUME_IP=$KEYSTONE_IP
+CEILOMETER_IP=$KEYSTONE_IP
 
 get_id () {
     echo `$@ | awk '/ id / { print $4 }'`
@@ -67,6 +68,10 @@ keystone --token $SERVICE_TOKEN --endpoint $SERVICE_ENDPOINT user-role-add --ten
 CINDER_USER=$(get_id keystone --token $SERVICE_TOKEN --endpoint $SERVICE_ENDPOINT user-create --name=cinder --pass="$SERVICE_PASSWORD" --tenant-id $SERVICE_TENANT --email=cinder@<%= email_domain %>)
 keystone --token $SERVICE_TOKEN --endpoint $SERVICE_ENDPOINT user-role-add --tenant-id $SERVICE_TENANT --user-id $CINDER_USER --role-id $ADMIN_ROLE
 
+CEILOMETER_USER=$(get_id keystone --token $SERVICE_TOKEN --endpoint $SERVICE_ENDPOINT user-create --name=ceilometer --pass="$SERVICE_PASSWORD" --tenant-id $SERVICE_TENANT --email=ceilometer@<%= email_domain %>)
+keystone --token $SERVICE_TOKEN --endpoint $SERVICE_ENDPOINT user-role-add --tenant-id $SERVICE_TENANT --user-id $CEILOMETER_USER --role-id $ADMIN_ROLE
+
+
 ## Create Service
 KEYSTONE_ID=$(keystone --token $SERVICE_TOKEN --endpoint $SERVICE_ENDPOINT service-create --name keystone --type identity --description 'OpenStack Identity'| awk '/ id / { print $4 }' )
 COMPUTE_ID=$(keystone --token $SERVICE_TOKEN --endpoint $SERVICE_ENDPOINT service-create --name=nova --type=compute --description='OpenStack Compute Service'| awk '/ id / { print $4 }' )
@@ -74,6 +79,7 @@ CINDER_ID=$(keystone --token $SERVICE_TOKEN --endpoint $SERVICE_ENDPOINT service
 GLANCE_ID=$(keystone --token $SERVICE_TOKEN --endpoint $SERVICE_ENDPOINT service-create --name=glance --type=image --description='OpenStack Image Service'| awk '/ id / { print $4 }' )
 SWIFT_ID=$(keystone --token $SERVICE_TOKEN --endpoint $SERVICE_ENDPOINT service-create --name=swift --type=object-store --description='OpenStack Storage Service' | awk '/ id / { print $4 }'  )
 EC2_ID=$(keystone --token $SERVICE_TOKEN --endpoint $SERVICE_ENDPOINT service-create --name=ec2 --type=ec2 --description='OpenStack EC2 service'| awk '/ id / { print $4 }' )
+CEILOMETER_ID=$(keystone --token $SERVICE_TOKEN --endpoint $SERVICE_ENDPOINT service-create --name=ceilometer --type=metering --description='OpenStack Ceilometer service'| awk '/ id / { print $4 }' )
 
 ## Create Endpoint
 #identity
@@ -93,3 +99,6 @@ keystone --token $SERVICE_TOKEN --endpoint $SERVICE_ENDPOINT endpoint-create --r
 
 #ec2
 keystone --token $SERVICE_TOKEN --endpoint $SERVICE_ENDPOINT endpoint-create --region $KEYSTONE_REGION --service-id=$EC2_ID --publicurl http://"$EC2_IP":8773/services/Cloud --adminurl http://"$EC2_IP":8773/services/Admin --internalurl http://"$EC2_IP":8773/services/Cloud
+
+#ceilometer
+keystone --token $SERVICE_TOKEN --endpoint $SERVICE_ENDPOINT endpoint-create --region $KEYSTONE_REGION --service-id=$CEILOMETER_ID --publicurl http://"$CEILOMETER_IP":8777 --adminurl http://"$CEILOMETER_IP":8777 --internalurl http://"$CEILOMETER_IP":8777
