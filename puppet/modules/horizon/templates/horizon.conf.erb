@@ -8,6 +8,7 @@
 
     DocumentRoot <%= source_dir %>/horizon/.blackhole/
     Alias /media <%= source_dir %>/horizon/openstack_dashboard/static
+    Alias /ganglia <%= source_dir %>/ganglia-webfrontend
 
     <Directory />
         Options FollowSymLinks
