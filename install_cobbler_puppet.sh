@@ -111,8 +111,8 @@ echo "$IPADDR  $(hostname)" >> /etc/hosts
 
 ## 配置 Puppet
 apt-get -y --force-yes install puppetmaster || exit 1
-sed -i "s/my_ip/$IPADDR\/pip-packages/g" $TOP_DIR/puppet/modules/all-sources/templates/pip.conf.erb
-sed -i "s/my_ip/$IPADDR\/pip-packages/g" $TOP_DIR/puppet/modules/all-sources/templates/pydistutils.cfg.erb
+sed -i "s/my_ip/$IPADDR/g" $TOP_DIR/puppet/modules/all-sources/templates/pip.conf.erb
+sed -i "s/my_ip/$IPADDR/g" $TOP_DIR/puppet/modules/all-sources/templates/pydistutils.cfg.erb
 cp -r $TOP_DIR/puppet/* /etc/puppet/
 
 cat > /etc/puppet/autosign.conf << _GEEK_
