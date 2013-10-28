@@ -6,8 +6,11 @@ class glusterfs::volume {
 
     file { "/opt/gluster_data/eccp-nova":
         ensure => directory,
-        owner => nova,
-        group => root,
+        notify => File["/opt/gluster_data/eccp-glance"],
+    }
+
+    file { "/opt/gluster_data/eccp-glance":
+        ensure => directory,
         notify => File["/opt/gluster_data/eccp-cinder"],
     }
 

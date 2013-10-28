@@ -16,8 +16,9 @@ fstab_content = open('/etc/fstab', 'r').read()
 
 if 'glusterfs' not in fstab_content:
     fstab.write(""+gluster_host+":eccp-nova /opt/stack/data/nova/instances glusterfs defaults 0 0\n")
-    fstab.write(""+gluster_host+":eccp-cinder /opt/stack/data/cinder glusterfs defaults 0 0\n")
-    fstab.write(""+gluster_host+":eccp-swift /opt/stack/data/swift glusterfs defaults 0 0\n ")
+    fstab.write(""+gluster_host+":eccp-cinder /opt/stack/data/cinder/volumes glusterfs defaults 0 0\n")
+    fstab.write(""+gluster_host+":eccp-swift /opt/stack/data/swift glusterfs defaults 0 0\n")
+    fstab.write(""+gluster_host+":eccp-glance /opt/stack/data/glance/images glusterfs defaults 0 0\n")
 else:
     pass
 fstab.close()
