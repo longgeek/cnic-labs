@@ -86,7 +86,7 @@ d-i     cdrom-detect/eject      boolean true
 # Do not halt/poweroff after install
 d-i     debian-installer/exit/halt      boolean false
 d-i     debian-installer/exit/poweroff  boolean false
-d-i     pkgsel/include string  vim openssh-server ntp lvm2
+d-i     pkgsel/include string  vim openssh-server ntp lvm2 xfsprogs
 
 # Set cloud-init data source to manual seeding
 cloud-init      cloud-init/datasources  multiselect     NoCloud
