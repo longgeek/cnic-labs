@@ -62,4 +62,4 @@ firewall_driver = nova.virt.libvirt.firewall.IptablesFirewallDriver
 scheduler_host_manager = nova.scheduler.baremetal_host_manager.BaremetalHostManager
 notification_topics = notifications
 notification_driver = nova.openstack.common.notifier.rabbit_notifier
-identity_endpoint = http://<%= keystone_host %>/35357/v2.0
+identity_endpoint = http://<%= keystone_host %>:5000/v2.0
