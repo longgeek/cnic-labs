@@ -2,6 +2,7 @@ class glusterfs::volume {
     file { "/opt/gluster_data":
         ensure => directory,
         notify => File["/opt/gluster_data/eccp-nova"],
+        require => Class["glusterfs::peer"],
     }
 
     file { "/opt/gluster_data/eccp-nova":
@@ -33,6 +34,6 @@ class glusterfs::volume {
     exec { "create volume":
         command => "sh /etc/glusterfs/create_volume.sh",
         path => $command_path,
-        unless => "ls /var/lib/glusterd/vols/*",
+        unless  => '[ "`ls /var/lib/glusterd/vols/ | wc -l`" -eq "4" ]',
     }
 }
