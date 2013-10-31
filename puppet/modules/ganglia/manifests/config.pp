@@ -13,7 +13,6 @@ class ganglia::config {
         path => $command_path,
         refreshonly => true,
         notify => File["/etc/ganglia/gmetad.conf"],
-        
     }
 
     file { "/etc/ganglia/gmetad.conf":
@@ -22,6 +21,7 @@ class ganglia::config {
     }
 
     file { "/etc/ganglia/gmond.conf":
-        content => template("ganglia/gmond.conf.erb")
+        content => template("ganglia/gmond.conf.erb"),
+        notify => Class["ganglia::service"],
     }
 }
