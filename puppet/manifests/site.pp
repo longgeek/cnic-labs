@@ -98,8 +98,12 @@ $horizon_db_password                = 'horizon'
 $monitor_db_name                    = 'monitor'
 $monitor_db_user                    = 'monitor'
 $monitor_db_password                = 'monitor'
+
 ## SWIFT
 $swift_proxy_host                   = $nova_my_ip
+$swift_devices                      = "$source_dir/data/swift"
+$swift_version                      = 'grizzly'
+$gluster_swift_version              = $swift_version
 
 ## GLUSTERFS
 $glusterfs_version                  = '3.4.0'
