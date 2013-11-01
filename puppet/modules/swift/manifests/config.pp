@@ -50,6 +50,6 @@ class swift::config {
     exec { "create ring":
         command => "gluster-swift-gen-builders eccp-swift",
         path => $command_path,
-        unless => "ls /etc/swift/object.tar.gz",
+        unless => "ls /etc/swift/object.ring.gz",
     }
 }
