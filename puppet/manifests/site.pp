@@ -86,6 +86,7 @@ $ec2_dmz_host                       = $nova_my_ip
 $novncproxy_host                    = $nova_my_ip
 $xvpvncproxy_host                   = $nova_my_ip
 $vncserver_proxyclient_address      = $nova_my_ip
+$qemu_version                       = '1.5.3'
 
 ## HORIZON
 $horizon_apt_requires               = ["apache2", "memcached", "python-memcache", "nodejs", "libapache2-mod-wsgi"]
