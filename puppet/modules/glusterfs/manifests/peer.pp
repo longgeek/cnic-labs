@@ -8,7 +8,6 @@ class glusterfs::peer {
     exec { "peer probe":
         command => "python /etc/glusterfs/add_peer.py",
         path => $command_path,
-        #unless => "ls /var/lib/glusterd/peers/*",
-        refreshonly => true,
+        unless => "[ \"`python -c \"a = '$glusterfs_nodes_list'.split(' '); print len(list(a)) - 1\"`\" = \"`gluster peer status | grep Hostname | wc -l`\" ]",
     }
 }

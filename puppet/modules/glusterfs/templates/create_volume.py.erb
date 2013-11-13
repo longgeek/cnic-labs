@@ -1,0 +1,31 @@
+#!/usr/bin/env python
+import os
+
+node_list = '<%= glusterfs_nodes_list %>'.split(' ')
+volume_list = ["eccp-nova", "eccp-cinder", "eccp-swift", "eccp-glance"]
+volume_num = os.popen("gluster volume list | wc -l").read().strip()
+node_num = len(node_list)
+
+if node_num >= 2 and node_num % 2 == 0:
+    pass
+else:
+    node_list = node_list[:-1]
+
+if int(volume_num) != int(4):
+    for name in volume_list:
+        brick = ''
+        for node in node_list:
+            brick += "%s:/opt/gluster_data/%s " % (node, name)
+        os.system("gluster volume create %s replica 2 %s || setfattr -x trusted.glusterfs.volume-id /opt/gluster_data/%s" % (name, brick, name))
+        os.system("gluster volume start %s" % name)
+else:
+    exist_node = os.popen("gluster volume info | grep -v Volume | grep eccp-nova | awk -F ':' '{print $2}' | awk '{print $1}'").read().rstrip().split("\n")
+    new_node = []
+    for i in node_list:
+        if i not in exist_node:
+            new_node.append(i)
+    for name in volume_list:
+        brick = ''
+        for node in new_node:
+            brick += "%s:/opt/gluster_data/%s " % (node, name)
+        os.system("gluster volume add-brick %s %s" % (name, brick))
