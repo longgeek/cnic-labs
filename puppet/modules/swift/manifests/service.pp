@@ -9,7 +9,7 @@ class swift::service {
     }
 
     exec { "start swift":
-        command => "swift-init main restart",
+        command => "swift-init main start",
         path => $command_path,
         onlyif => "swift-init main status | grep 'No'",
     }
