@@ -1,0 +1,20 @@
+#!/usr/bin/env python
+
+import os
+import random
+
+glusterfs_nodes_list = '<%= glusterfs_nodes_list %>'.split(' ')
+
+ipaddr = os.popen("cat /etc/hosts | grep `hostname` | grep -v 127.0.1.1 | awk '{print $1}'").read().rstrip()
+if ipaddr in glusterfs_nodes_list:
+    glusterfs_nodes_list.remove(ipaddr)
+
+gluster_host = glusterfs_nodes_list[random.randint(0, len(glusterfs_nodes_list) - 1)]
+
+os.system("mount.glusterfs "+gluster_host+":eccp-nova /opt/stack/data/nova/instances")
+os.system("mount.glusterfs "+gluster_host+":eccp-cinder /opt/stack/data/cinder/volumes")
+os.system("mount.glusterfs "+gluster_host+":eccp-glance /opt/stack/data/glance/images")
+nova_compute_press = os.popen("ps aux | grep nova-compute | wc -l").read().rstrip()
+if int(nova_compute_press) > int(0):
+    os.system("/etc/init.d/nova-compute restart")
+    

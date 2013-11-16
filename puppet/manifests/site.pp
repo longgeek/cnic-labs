@@ -51,7 +51,7 @@ $cinder_client_source_pack_name     = 'python-cinderclient.tar.gz'
 $cinder_volume_group                = 'cinder-volumes'
 $cinder_log_verbose                 = 'True'
 $cinder_log_debug                   = 'False'
-$cinder_volume_format               = 'file'                            # 默认为 'file', 用文件来模拟分区, 设置为 'file'是依赖 '$cinder_volume_size'
+$cinder_volume_format               = 'glusterfs'                            # 默认为 'file', 用文件来模拟分区, 设置为 'file'是依赖 '$cinder_volume_size'
                                                                         # 设置为 'disk'时，依赖 '$cinder_volume_disk_part’
 $cinder_volume_size                 = '5G'                              # 使用 file 的话需要指定大小, 必须有单位
 $cinder_volume_disk_part            = '["sdb1"]'                          # 指定 cinder 使用哪些硬盘分区, 例如: "['sdb1', 'sdc1', 'sdd1']"
@@ -65,7 +65,7 @@ $nova_source_pack_name              = 'nova.tar.gz'
 $nova_client_source_pack_name       = 'python-novaclient.tar.gz'
 $nova_novnc_source_pack_name        = 'noVNC.tar.gz'
 #$nova_apt_requires                  = ["bridge-utils", "kvm", "libvirt-bin", "libvirt-dev", "python-libvirt", "qemu-kvm", "python-m2crypto", "dnsmasq-utils"]
-$nova_apt_requires                  = ["bridge-utils", "kvm", "qemu-kvm", "python-m2crypto", "dnsmasq-utils"]
+$nova_apt_requires                  = ["bridge-utils", "python-m2crypto", "dnsmasq-utils"]
 $nova_log_verbose                   = 'True'
 $nova_log_debug                     = 'False'
 $nova_my_ip                         = '%nova%'
@@ -86,6 +86,7 @@ $ec2_dmz_host                       = $nova_my_ip
 $novncproxy_host                    = $nova_my_ip
 $xvpvncproxy_host                   = $nova_my_ip
 $vncserver_proxyclient_address      = $nova_my_ip
+$qemu_version                       = '1.5.3'
 
 ## HORIZON
 $horizon_apt_requires               = ["apache2", "memcached", "python-memcache", "nodejs", "libapache2-mod-wsgi"]
@@ -98,8 +99,12 @@ $horizon_db_password                = 'horizon'
 $monitor_db_name                    = 'monitor'
 $monitor_db_user                    = 'monitor'
 $monitor_db_password                = 'monitor'
+
 ## SWIFT
 $swift_proxy_host                   = $nova_my_ip
+$swift_devices                      = "$source_dir/data/swift"
+$swift_version                      = 'grizzly'
+$gluster_swift_version              = $swift_version
 
 ## GLUSTERFS
 $glusterfs_version                  = '3.4.0'

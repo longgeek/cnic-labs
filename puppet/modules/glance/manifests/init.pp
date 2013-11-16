@@ -66,8 +66,10 @@ class glance {
     }
 
     exec { "glance_add": 
-        command => "glance --os_username=admin --os_password=${admin_password} --os_tenant_name=admin --os_auth_url=http://${keystone_host}:5000/v2.0 image-create --name='cirros-0.3.0' --public --container-format=ovf --disk-format=qcow2 < /etc/glance/cirros-0.3.0-x86_64-disk.img && touch /etc/glance/.glance_add",
+        command => "[ \"`glance --os_username=admin --os_password=${admin_password} --os_tenant_name=admin --os_auth_url=http://${keystone_host}:5000/v2.0 image-list | wc -l`\" -ne \"1\" ] && \
+                    glance --os_username=admin --os_password=${admin_password} --os_tenant_name=admin --os_auth_url=http://${keystone_host}:5000/v2.0 image-delete `glance --os_username=admin --os_password=${admin_password} --os_tenant_name=admin --os_auth_url=http://${keystone_host}:5000/v2.0 image-list | grep cirros | awk -F'|' '{print \$2}'`; \
+                    glance --os_username=admin --os_password=${admin_password} --os_tenant_name=admin --os_auth_url=http://${keystone_host}:5000/v2.0 image-create --name='cirros-0.3.0' --public --container-format=ovf --disk-format=qcow2 < /etc/glance/cirros-0.3.0-x86_64-disk.img",
         path => $command_path,
-        creates => '/etc/glance/.glance_add',
+        unless => "[ \"`ls $source_dir/data/glance/images/ | wc -l`\" -ne \"0\" ]",
     }
 }

@@ -1,14 +1,9 @@
 class ganglia::service {
-    exec { "start gmetad":
-        command => "/etc/init.d/gmetad restart",
+    exec { "restart ganglia":
+        command => "/etc/init.d/gmetad restart; \
+                    /etc/init.d/ganglia-monitor restart",
         path => $command_path,
-        unless => "ps aux | grep gmetad | grep -v 'grep'",
-        notify => Exec["start gmond"],
-    }
-
-    exec { "start gmond":
-        command => "/etc/init.d/ganglia-monitor",
-        path => $command_path,
-        unless => "ps aux | grep gmond | grep -v 'grep'",
+        refreshonly => true,
+        require => Class["ganglia::config"],
     }
 }

@@ -1,0 +1,8 @@
+#!/usr/env/bin python
+
+import os
+glusterfs_list = '<%= glusterfs_nodes_list %>'.split(' ')[1:]
+glusterfs_peer = os.popen("gluster peer status | grep Hostname | awk '{print $2}'").read().rstrip().split("\n")
+for node in glusterfs_list:
+    if node not in glusterfs_peer:
+        os.system("gluster peer probe %s" % node)

@@ -11,15 +11,10 @@ if ipaddr in glusterfs_nodes_list:
 
 gluster_host = glusterfs_nodes_list[random.randint(0, len(glusterfs_nodes_list) - 1)]
 
-fstab = open('/etc/fstab', 'a')
-fstab_content = open('/etc/fstab', 'r').read()
-
-if 'glusterfs' not in fstab_content:
-    fstab.write(""+gluster_host+":eccp-nova /opt/stack/data/nova/instances glusterfs defaults 0 0\n")
-    fstab.write(""+gluster_host+":eccp-cinder /opt/stack/data/cinder/volumes glusterfs defaults 0 0\n")
-    fstab.write(""+gluster_host+":eccp-swift /opt/stack/data/swift glusterfs defaults 0 0\n")
-    fstab.write(""+gluster_host+":eccp-glance /opt/stack/data/glance/images glusterfs defaults 0 0\n")
-else:
-    pass
-fstab.close()
-os.system("mount -a")
+os.system("mount.glusterfs "+gluster_host+":eccp-nova /opt/stack/data/nova/instances")
+os.system("mount.glusterfs "+gluster_host+":eccp-cinder /opt/stack/data/cinder/volumes")
+os.system("mount.glusterfs "+gluster_host+":eccp-glance /opt/stack/data/glance/images")
+nova_compute_press = os.popen("ps aux | grep nova-compute | wc -l").read().rstrip()
+if int(nova_compute_press) > int(0):
+    os.system("/etc/init.d/nova-compute restart")
+    

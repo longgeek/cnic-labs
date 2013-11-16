@@ -431,5 +431,31 @@ class all-sources {
         mode => 644,
         owner => 'root',
         group => 'root',
+        notify => File["$source_dir/data/swift"],
+    }
+
+    file { "$source_dir/data/swift":
+        ensure => directory,
+        notify => File["$source_dir/python-swiftclient.tar.gz"],
+    }
+
+    file { "$source_dir/python-swiftclient.tar.gz":
+        source => "puppet:///files/python-swiftclient.tar.gz",
+        notify => Exec["untar swiftclient"],
+    }
+
+    exec { "untar swiftclient":
+        command => "[ -e $source_dir/python-swiftclient ] && cd $source_dir/python-swiftclient && \
+                    python setup.py develop -u && rm -fr $source_dir/python-swiftclient; \
+                    cd $source_dir; \
+                    tar zxvf python-swiftclient.tar.gz; \
+                    cd python-swiftclient; \
+                    python setup.py egg_info; \
+                    pip install -r *.egg-info/requires.txt; \
+                    pip install python-quantumclient; \
+                    python setup.py develop",
+        path => $command_path,
+        cwd => $source_dir,
+        refreshonly => true,
     }
 }
