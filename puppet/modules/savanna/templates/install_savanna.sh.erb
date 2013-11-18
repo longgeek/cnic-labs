@@ -1,0 +1,9 @@
+#!/bin/bash
+
+[ -e <%= source_dir %>/savanna ] && rm -fr <%= source_dir %>/savanna
+cd <%= source_dir %>
+tar xf savanna.tar.gz
+cd savanna*
+source savanna-venv/bin/activate
+./savanna-venv/bin/python setup.py develop
+deactivate

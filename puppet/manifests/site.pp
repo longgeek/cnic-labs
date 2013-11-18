@@ -94,6 +94,7 @@ $horizon_source_pack_name           = 'horizon.tar.gz'
 $horizon_db_user                    = 'horizon'
 $horizon_db_name                    = 'horizon'
 $horizon_db_password                = 'horizon'
+$savanna_host                       = 'NULL'
 
 ## MONITOR
 $monitor_db_name                    = 'monitor'

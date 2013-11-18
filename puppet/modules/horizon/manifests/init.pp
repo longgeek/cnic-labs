@@ -5,13 +5,23 @@ class horizon {
         notify => File["$source_dir/horizon/openstack_dashboard/settings.py"],
     }
  
-    file { "$source_dir/horizon/openstack_dashboard/settings.py":
-        content => template("horizon/settings.py.erb"),
-        owner => 'apache',
-        group => 'apache',
-        mode => 644,
-        notify => Exec["chinese"],
-    }
+    if $savanna_host == "NULL" {
+        file { "$source_dir/horizon/openstack_dashboard/settings.py":
+            content => template("horizon/settings.py.erb"),
+            owner => 'apache',
+            group => 'apache',
+            mode => 644,
+            notify => [Exec["chinese"], Exec["horizon syncdb"]],
+        }
+    } else {
+        file { "$source_dir/horizon/openstack_dashboard/settings.py":
+            content => template("horizon/savanna.settings.py.erb"),
+            owner => 'apache',
+            group => 'apache',
+            mode => 644,
+            notify => [Exec["chinese"], Exec["horizon syncdb"]],
+        }
+           }
 
     exec { "chinese":
         command => "django-admin.py compilemessages -l zh_CN",
@@ -22,13 +32,21 @@ class horizon {
     }
 
 
-    file { "$source_dir/horizon/openstack_dashboard/local/local_settings.py":
-        content => template("horizon/local_settings.py.erb"),
-        notify => Exec["horizon syncdb"],
-    }
+    if $savanna_host == "NULL" {
+        file { "$source_dir/horizon/openstack_dashboard/local/local_settings.py":
+            content => template("horizon/local_settings.py.erb"),
+            notify => Exec["horizon syncdb"],
+        }
+    } else {
+        file { "$source_dir/horizon/openstack_dashboard/local/local_settings.py":
+            content => template("horizon/savanna.local_settings.py.erb"),
+            notify => Exec["horizon syncdb"],
+        }
+           }
 
     exec { "horizon syncdb":
-        command => "python $source_dir/horizon/manage.py syncdb --noinput",
+        command => "python $source_dir/horizon/manage.py syncdb --noinput; \
+                    /etc/init.d/apache2 restart",
         path => $command_path,
         refreshonly => true,
         notify => File["/etc/apache2/conf.d/horizon.conf"],

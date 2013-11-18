@@ -2,7 +2,6 @@ class glusterfs-client::volume {
     file { "/opt/gluster_data":
         ensure => directory,
         notify => File["/opt/gluster_data/eccp-nova"],
-        require => Class["glusterfs-client::peer"],
     }
 
     file { "/opt/gluster_data/eccp-nova":
