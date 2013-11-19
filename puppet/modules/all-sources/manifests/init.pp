@@ -1,6 +1,6 @@
 class all-sources {
     ### Base
-    user { ["keystone", "glance", "cinder", "apache"]:
+    user { ["keystone", "glance", "cinder", "apache", "ceilometer"]:
         ensure => "present",
         shell => "/usr/sbin/nologin",
         notify => User["nova"],
