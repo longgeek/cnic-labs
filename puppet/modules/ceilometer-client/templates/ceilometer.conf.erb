@@ -1,0 +1,44 @@
+[DEFAULT]
+verbose = True
+debug = True
+os_auth_url = http://<%= keystone_host %>:35357/v2.0
+os_tenant_name = <%= service_tenant_name %>
+os_password = <%= service_password %>
+os_username = ceilometer
+os_endpoint = http://<%= keystone_host %>:8777
+policy_file = /etc/ceilometer/policy.json
+notification_topics = notifications,glance_notifications
+rabbit_password = <%= rabbit_password %>
+rabbit_host = <%= keystone_host %>
+rabbit_max_retries = 10
+rpc_backend = ceilometer.openstack.common.rpc.impl_kombu
+database_connection=mongodb://127.0.0.1:27017/ceilometer
+notification_driver = ceilometer.openstack.common.notifier.rpc_notifier
+server_telnet_ip = 127.0.0.1
+server_telnet_port = 8649
+log_dir = /var/log/ceilometer
+
+[keystone_authtoken]
+auth_protocol = http
+auth_host = <%= keystone_host %>
+auth_port = 5000
+admin_user = ceilometer
+admin_password = <%= service_password %>
+admin_tenant_name = <%= service_tenant_name %>
+auth_uri = http://<%= keystone_host %>:5000/v2.0
+
+[publisher_rpc]
+server_topic = server
+server_secret = True
+metering_topic = metering
+metering_secret = True
+service_topic = <%= service_tenant_name %>
+service_secret = True
+
+[alarm]
+threshold_evaluation_interval = 10
+
+[service_credentials]
+os_password = <%= service_password %>
+os_tenant_name = <%= service_tenant_name %>
+os_auth_url = http://<%= keystone_host %>:5000/v2.0

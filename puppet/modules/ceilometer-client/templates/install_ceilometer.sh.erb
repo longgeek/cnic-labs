@@ -1,0 +1,12 @@
+#!/bin/bash
+
+[ -e <%= source_dir %>/ceilometer ] && rm -fr <%= source_dir %>/ceilometer
+cd <%= source_dir %>
+tar zxvf ceilometer.tar.gz
+cd ceilometer
+source grizzlyenv/bin/activate
+./grizzlyenv/bin/python setup.py develop
+deactivate
+mkdir /etc/ceilometer/
+cp <%= source_dir %>/ceilometer/etc/ceilometer/* /etc/ceilometer/
+chown -R ceilometer:ceilometer /etc/ceilometer

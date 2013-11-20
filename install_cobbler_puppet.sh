@@ -146,7 +146,7 @@ iface eth0 inet static
     address \$IPADDR
     netmask \$NETMASK
     gateway $GATEWAY
-    dns-nameservers 8.8.8.8 $IPADDR
+    dns-nameservers $IPADDR 8.8.8.8
 _GEEKS_
 /etc/init.d/networking restart
 
