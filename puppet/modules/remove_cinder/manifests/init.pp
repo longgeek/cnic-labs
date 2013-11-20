@@ -7,10 +7,9 @@ class remove_cinder {
                     apt-get -y --force-yes autoremove; \
                     rm -fr /etc/init.d/cinder*; \
                     rm -fr /etc/init/cinder*; \
-                    rm -fr /etc/cinder/cinder.conf; \
-                    rm -fr /etc/cinder/create-cinder-volumes.py; \
-                    rm -fr /etc/cinder/api-paste.ini; \
-                    rm -fr /var/log/cinder/*",
+                    rm -fr /etc/cinder/; \
+                    rm -fr /var/log/cinder; \
+                    rm -fr $source_dir/*cinder*",
         path => $command_path,
         onlyif => "ls /etc/cinder/cinder.conf",
         notify => Exec["remove cinder volumes"],

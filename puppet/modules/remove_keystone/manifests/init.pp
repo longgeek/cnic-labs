@@ -3,10 +3,9 @@ class remove_keystone {
         command => "/etc/init.d/keystone stop; \
                     rm -f /etc/init.d/keystone; \
                     rm -f /etc/init/keystone; \
-                    rm -f /etc/keystone/logging.conf; \
-                    rm -f /etc/keystone/keystone.conf; \
-                    rm -f /etc/keystone/keystone.sh; \
-                    rm -fr /var/log/keystone/*",
+                    rm -fr /etc/keystone; \
+                    rm -fr /var/log/keystone; \
+                    rm -fr $source_dir/*keystone*",
         path => $command_path,
         onlyif => "ls /etc/keystone/keystone.conf",
     }

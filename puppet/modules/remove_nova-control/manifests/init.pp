@@ -13,17 +13,16 @@ class remove_nova-control {
                     rm -fr /etc/init.d/nova-*; \
                     rm -fr /etc/init/nova-*; \
                     rm -f $source_dir/eccp.license; \
-                    rm -f /etc/libvirt/libvirtd.conf; \
+                    rm -fr $source_dir/*nova*; \
+                    rm -fr $source_dir/python-novaclient.tar.gz; \
+                    rm -fr /etc/libvirt/; \
                     rm -f /etc/init/libvirt-bin.conf; \
+                    rm -f /etc/init.d/libvirt-bin.conf; \
                     sed -i '/nbd/d' /etc/modules; \
-                    rm -f /etc/nova/nova.conf; \
-                    rm -f /etc/nova/api-paste.ini; \
-                    rm -f /etc/nova/rootwrap.conf; \
-                    rm -fr /etc/nova/.fixed_ips; \
+                    rm -fr /etc/nova/; \
                     apt-get -y --force-yes remove --purge bridge-utils kvm libvirt-bin libvirt-dev python-libvirt qemu-kvm python-m2crypto dnsmasq-utils; \
                     apt-get -y --force-yes autoremove",
         path => $command_path,
         onlyif => "ls /etc/nova/nova.conf",
     }
-
 }
