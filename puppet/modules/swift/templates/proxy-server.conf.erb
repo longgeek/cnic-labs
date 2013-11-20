@@ -82,4 +82,4 @@ use = egg:swift#healthcheck
 use = egg:swift#memcache
 # Update this line to contain a comma separated list of memcache servers
 # shared by all nodes running the proxy-server service.
-memcache_servers = localhost:11211
+memcache_servers = <%= memcache_host %>:11211
