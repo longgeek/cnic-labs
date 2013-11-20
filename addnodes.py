@@ -26,7 +26,9 @@ if len(sys.argv) != 2:
 dns_conf = "/var/lib/cobbler/cobbler_hosts"
 dhcp_hosts_conf = "/etc/dnsmasq.d/hosts.conf"
 puppet_site = "/etc/puppet/manifests/site.pp"
+puppet_hosts = "/etc/puppet/modules/bases/templates/hosts.erb"
 power_type = ['ilo', 'ipmilan', 'ipmitool', 'rsa']
+glusterfs_list = []
 
 def write_conf(data):
 
@@ -35,7 +37,7 @@ def write_conf(data):
     # 去掉重复的 ip 或 hostname 或 mac
     for node_info in data:
         for i in [node_info["ip"], node_info["hostname"], node_info["mac"]]:
-            for j in [dns_conf, dhcp_hosts_conf]:
+            for j in [dns_conf, dhcp_hosts_conf, puppet_hosts]:
                 os.system("sed -i '/%s/d' %s" % (i, j))
 
         # 去掉重复的 cobbler system
@@ -49,10 +51,18 @@ def write_conf(data):
                     os.system("cobbler system remove --name %s" % system)
                
     # 打开文件
+    # dns file
     dns_conf_content = open(dns_conf, "a+")
-    dhcp_hosts_conf_content = open(dhcp_hosts_conf, "a+")
     dns_content = dns_conf_content.read()
+
+    # dhcp file
+    dhcp_hosts_conf_content = open(dhcp_hosts_conf, "a+")
     dhcp_content = dhcp_hosts_conf_content.read()
+
+    # puppet manager hosts file
+    puppet_hosts_conf = open(puppet_hosts, "a+")
+    puppet_hosts_content = puppet_hosts_conf.read()
+    
 
     # 遍历 json 数据
     for node_info in data:
@@ -63,6 +73,9 @@ def write_conf(data):
         # 把 IP、HOSTNAME、MAC 写入到 DHCP 配置文件，做地址绑定
         dhcp_hosts_conf_content.write("dhcp-host=%s,%s,%s\n" % 
             (node_info["ip"], node_info["hostname"], node_info["mac"]))
+        # 把解析记录写到 puppet 得 bases 模块中
+        puppet_hosts_conf.write("%s %s\n" % (node_info["ip"], 
+                                    node_info["hostname"]))
 
         # 配置了远控卡信息
         if node_info["power-type"] and node_info["power-address"] and \
@@ -91,12 +104,12 @@ def write_conf(data):
                       node_info["mac"], node_info["ip"]))
 
         # 找出 Puppet Class 执行的顺序
-        class_order = 'Class["all-sources"]'
+        class_order = 'Class["bases"] -> Class["all-sources"]'
         for types in node_info["type"]:
             class_order += ' -> Class["%s"]' % types
                 
         # 拿到节点需要 include 的模块
-        include_module = 'include all-sources, '
+        include_module = 'include bases, all-sources, '
         for types in node_info["type"]:
             include_module += '%s' % types
             if types != node_info["type"][-1]:
@@ -107,7 +120,7 @@ def write_conf(data):
 
         # 如果 mysql 或 rabbitmq 单独部署
         if ['mysql'] == node_info['type'] or ['rabbitmq'] == node_info['type']:
-            puppet_nodes_conf.write("node '%s' { \n\tinclude %s\n}" % 
+            puppet_nodes_conf.write("node '%s' { \n\tinclude bases, %s\n}" % 
                                                     (node_info["hostname"],
                                                      node_info['type'][0]))
 
@@ -115,7 +128,7 @@ def write_conf(data):
         elif ('mysql' and 'rabbitmq' in node_info['type']) and \
                                      len(node_info['type']) == 2:
 
-            puppet_nodes_conf.write("node '%s' { \n\tinclude %s, %s\n}" % 
+            puppet_nodes_conf.write("node '%s' { \n\tinclude bases, %s, %s\n}" % 
                                                     (node_info["hostname"], 
                                                      node_info['type'][0], 
                                                      node_info['type'][1]))
@@ -149,10 +162,41 @@ def write_conf(data):
         if 'nova-control' in node_info["type"]:
             os.system("sed -i '/^$nova_my_ip.*$/ s/=.*$/= \"%s\"/g' %s" %
                                           (node_info['ip'], puppet_site))
+            os.system("sed -i '/^$nova_api_host.*$/ s/=.*$/= \"%s\"/g' %s" %
+                                          (node_info['hostname'], puppet_site))
 
+        if 'cinder' in node_info["type"]:
+            os.system("sed -i '/^$cinder_host.*$/ s/=.*$/= \"%s\"/g' %s" %
+                                          (node_info['hostname'], puppet_site))
+
+        if 'horizon' in node_info["type"]:
+            os.system("sed -i '/^$memcache_host.*$/ s/=.*$/= \"%s\"/g' %s" %
+                                          (node_info['hostname'], puppet_site))
+
+        if 'savanna' in node_info["type"]:
+            os.system("sed -i '/^$savanna_host.*$/ s/=.*$/= \"%s\"/g' %s" %
+                                          (node_info['hostname'], puppet_site))
+
+        if 'swift' in node_info["type"]:
+            os.system("sed -i '/^$swift_proxy_host.*$/ s/=.*$/= \"%s\"/g' %s" %
+                                          (node_info['hostname'], puppet_site))
+       
+        if 'ceilometer' in node_info["type"]:
+            os.system("sed -i '/^$ceilometer_api_host.*$/ s/=.*$/= \"%s\"/g' %s" %
+                                          (node_info['hostname'], puppet_site))
+
+        if 'glusterfs' or 'glusterfs-client' in node_info["type"]:
+            glusterfs_list.append(node_info['ip'])
+            os.system("sed -i '/^$cinder_volume_format.*$/ s/=.*$/= \"glusterfs\"/g' %s" % puppet_site)
+
+    # 在 site.pp 中写入所有得 glusterfs 节点列表
+    os.system("sed -i '/^$glusterfs_nodes_list.*$/ s/=.*$/= \"%s\"/g' %s" %
+                                             (' '.join(glusterfs_list), puppet_site))
+  
     # 关闭文件
     dns_conf_content.close()
     dhcp_hosts_conf_content.close()
+    puppet_hosts_conf.close()
 
     # 重启服务
     os.system("/etc/init.d/dnsmasq restart > /dev/null 2>&1; /etc/init.d/cobbler restart > /dev/null 2>&1")
