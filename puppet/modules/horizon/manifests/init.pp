@@ -54,6 +54,13 @@ class horizon {
 
     file { "/etc/apache2/conf.d/horizon.conf":
         content => template("horizon/horizon.conf.erb"),
+        notify => [Exec["memcache listen"], Service["apache2", "memcached"]],
+    }
+    
+    exec { "memcache listen":
+        command => "sed -i 's/127.0.0.1/0.0.0.0/g' /etc/memcached.conf",
+        path => $command_path,
+        unless => "grep 0.0.0.0 /etc/memcached.conf",
         notify => Service["apache2", "memcached"],
     }
   
