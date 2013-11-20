@@ -22,11 +22,11 @@ KEYSTONE_REGION=<%= keystone_region %>
 # corresponding ip address set the following variables
 KEYSTONE_IP="<%= keystone_host %>"
 SWIFT_IP="<%= swift_proxy_host %>"
-COMPUTE_IP=$KEYSTONE_IP
-EC2_IP=$KEYSTONE_IP
-GLANCE_IP=$KEYSTONE_IP
-VOLUME_IP=$KEYSTONE_IP
-CEILOMETER_IP=$KEYSTONE_IP
+COMPUTE_IP=<%= nova_api_host %>
+EC2_IP=<%= nova_api_host %>
+GLANCE_IP=<%= glance_host %>
+VOLUME_IP=<%= cinder_host %>
+CEILOMETER_IP=<%= ceilometer_api_host %>
 
 get_id () {
     echo `$@ | awk '/ id / { print $4 }'`
