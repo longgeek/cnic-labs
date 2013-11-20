@@ -165,10 +165,10 @@ class nova-control::install {
                     /etc/init.d/nova-xvpvncproxy restart",
         path => $command_path,
         refreshonly => true,
-        notify => Service["nova-api", "nova-cert", "nova-scheduler", "nova-network", "nova-compute", "nova-consoleauth", "nova-console", "nova-novncproxy", "nova-xvpvncproxy"],
+        notify => Service["nova-api", "nova-cert", "nova-scheduler", "nova-consoleauth", "nova-console", "nova-novncproxy", "nova-xvpvncproxy"],
     }
 
-    service { ["nova-api", "nova-cert", "nova-scheduler", "nova-network", "nova-compute", "nova-consoleauth", "nova-console", "nova-novncproxy", "nova-xvpvncproxy"]:
+    service { ["nova-api", "nova-cert", "nova-scheduler", "nova-consoleauth", "nova-console", "nova-novncproxy", "nova-xvpvncproxy"]:
         ensure => "running",
         enable => true,
         hasstatus => true,
@@ -180,5 +180,37 @@ class nova-control::install {
         command => "nova-manage network create private --fixed_range_v4=${fixed_range} --num_networks=1 --bridge=br100 --bridge_interface=${flat_interface} --network_size=${network_size} --multi_host=T && mkdir /etc/nova/.fixed_ips",
         path => $command_path,
         creates => "/etc/nova/.fixed_ips",
+        notify => Service["nova-network"],
     }
+
+    if $nova_control_network == 'True' {
+        service { "nova-network":
+            ensure => "running",
+            enable => true,
+            hasstatus => true,
+            hasrestart => true,
+            notify => Service["nova-compute"],
+        }
+    } else {
+        service { "nova-network":
+            ensure => "stopped",
+            enable => false,
+            notify => Service["nova-compute"],
+        }
+      }
+
+    if $nova_control_compute == 'True' {
+        service { "nova-compute":
+            ensure => "running",
+            enable => true,
+            hasstatus => true,
+            hasrestart => true,
+        }
+    } else {
+        service { "nova-compute":
+            ensure => "stopped",
+            enable => false,
+        }
+      }
+
 }
