@@ -114,6 +114,7 @@ apt-get -y --force-yes install puppetmaster || exit 1
 sed -i "s/my_ip/$IPADDR/g" $TOP_DIR/puppet/modules/all-sources/templates/pip.conf.erb
 sed -i "s/my_ip/$IPADDR/g" $TOP_DIR/puppet/modules/all-sources/templates/pydistutils.cfg.erb
 cp -r $TOP_DIR/puppet/* /etc/puppet/
+echo "$IPADDR  $(hostname)" >> /etc/puppet/modules/bases/templates/hosts.erb
 
 cat > /etc/puppet/autosign.conf << _GEEK_
 `hostname`
@@ -146,7 +147,7 @@ iface eth0 inet static
     address \$IPADDR
     netmask \$NETMASK
     gateway $GATEWAY
-    dns-nameservers $IPADDR 8.8.8.8
+    dns-nameservers 8.8.8.8 $IPADDR 
 _GEEKS_
 /etc/init.d/networking restart
 
