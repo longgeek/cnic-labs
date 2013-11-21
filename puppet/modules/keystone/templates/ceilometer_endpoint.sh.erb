@@ -1,0 +1,8 @@
+#!/bin/bash
+
+source /etc/profile
+CEILOMETER_IP="<%= ceilometer_api_host %>"
+CEILOMETER_ID=$(keystone service-list | grep ceilometer | awk '{print $2}')
+keystone endpoint-list | grep 8777 && keystone endpoint-delete $(keystone endpoint-list | grep 8777 | awk '{print $2}')
+
+keystone endpoint-create --region <%= keystone_region %> --service-id=$CEILOMETER_ID --publicurl http://"$CEILOMETER_IP":8777 --adminurl http://"$CEILOMETER_IP":8777 --internalurl http://"$CEILOMETER_IP":8777

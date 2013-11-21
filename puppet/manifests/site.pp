@@ -7,11 +7,11 @@ $source_dir                         = '/opt/stack'
 $source_apt_requires                = ["build-essential", "python-dev", "python-setuptools", "python-pip", "libxml2-dev", "libxslt1-dev", "git", "python-numpy"]
 
 ## MYSQL
-$mysql_host                         = '%mysql%'
+$mysql_host                         = '%mysql_host%'
 $mysql_root_password                = 'csdb123cnic'
 
 ## KEYSTONE
-$keystone_host                      = '%keystone%'
+$keystone_host                      = '%keystone_host%'
 $keystone_source_pack_name          = 'keystone.tar.gz'
 $keystone_client_source_pack_name   = 'python-keystoneclient.tar.gz'
 $admin_token                        = 'admin'
@@ -29,7 +29,7 @@ $keystone_logger_level              = 'DEBUG'
 $keystone_logger_handlers           = 'devel,production'
 
 ## GLANCE
-$glance_host                        = '%glance%'
+$glance_host                        = '%glance_host%'
 $glance_db_user                     = 'glance'
 $glance_db_name                     = 'glance'
 $glance_db_password                 = 'glance'
@@ -40,12 +40,12 @@ $glance_log_debug                   = 'True'
 $glance_default_store               = 'file'
 
 ## AMQP
-$rabbit_host                        = '%rabbit%'
+$rabbit_host                        = '%rabbit_host%'
 $rabbit_userid                      = 'guest'
 $rabbit_password                    = 'longgeek'
 
 ## CINDER
-$cinder_host                        = '%cinder%'
+$cinder_host                        = '%cinder_host%'
 $cinder_db_user                     = 'cinder'
 $cinder_db_name                     = 'cinder'
 $cinder_db_password                 = 'cinder'
@@ -69,8 +69,8 @@ $nova_novnc_source_pack_name        = 'noVNC.tar.gz'
 $nova_apt_requires                  = ["bridge-utils", "python-m2crypto", "dnsmasq-utils"]
 $nova_log_verbose                   = 'True'
 $nova_log_debug                     = 'True'
-$nova_my_ip                         = '%nova%'
-$nova_api_host                      = '%nova_api%'
+$nova_my_ip                         = '%nova_my_ip%'
+$nova_api_host                      = '%nova_api_host%'
 $nova_s3_host                       = $nova_my_ip
 $nova_s3_port                       = '3333'
 $nova_metadata_host                 = $nova_my_ip
@@ -98,17 +98,17 @@ $horizon_source_pack_name           = 'horizon.tar.gz'
 $horizon_db_user                    = 'horizon'
 $horizon_db_name                    = 'horizon'
 $horizon_db_password                = 'horizon'
-$memcache_host                      = '%memcache%'
+$memcache_host                      = '%memcache_host%'
 $savanna_host                       = 'NULL'
 
 ## MONITOR
 $monitor_db_name                    = 'monitor'
 $monitor_db_user                    = 'monitor'
 $monitor_db_password                = 'monitor'
-$ceilometer_api_host                = '%ceilometer_host%'
+$ceilometer_api_host                = '%ceilometer_api_host%'
 
 ## SWIFT
-$swift_proxy_host                   = $nova_my_ip
+$swift_proxy_host                   = '%swift_proxy_host%''
 $swift_devices                      = "$source_dir/data/swift"
 $swift_version                      = 'grizzly'
 $gluster_swift_version              = $swift_version

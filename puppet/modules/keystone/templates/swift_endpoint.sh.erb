@@ -1,0 +1,8 @@
+#!/bin/bash
+
+source /etc/profile
+SWIFT_IP="<%= swift_proxy_host %>"
+SWIFT_ID=$(keystone service-list | grep swift | awk '{print $2}')
+keystone endpoint-list | grep 8080 && keystone endpoint-delete $(keystone endpoint-list | grep 8080 | awk '{print $2}')
+
+keystone endpoint-create --region <%= keystone_region %> --service-id=$SWIFT_ID --publicurl http://"$SWIFT_IP":8080/v1/AUTH_\$\(tenant_id\)s --adminurl http://"$SWIFT_IP":8080/v1 --internalurl http://"$SWIFT_IP":8080/v1/AUTH_\$\(tenant_id\)s

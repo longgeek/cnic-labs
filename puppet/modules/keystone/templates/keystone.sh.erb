@@ -21,12 +21,12 @@ KEYSTONE_REGION=<%= keystone_region %>
 # of course you are a multi-node architecture, and swift service
 # corresponding ip address set the following variables
 KEYSTONE_IP="<%= keystone_host %>"
-SWIFT_IP="<%= swift_proxy_host %>"
+#SWIFT_IP="<%= swift_proxy_host %>"
 COMPUTE_IP=<%= nova_api_host %>
 EC2_IP=<%= nova_api_host %>
 GLANCE_IP=<%= glance_host %>
 VOLUME_IP=<%= cinder_host %>
-CEILOMETER_IP=<%= ceilometer_api_host %>
+#CEILOMETER_IP=<%= ceilometer_api_host %>
 
 get_id () {
     echo `$@ | awk '/ id / { print $4 }'`
@@ -95,10 +95,10 @@ keystone --token $SERVICE_TOKEN --endpoint $SERVICE_ENDPOINT endpoint-create --r
 keystone --token $SERVICE_TOKEN --endpoint $SERVICE_ENDPOINT endpoint-create --region $KEYSTONE_REGION --service-id=$GLANCE_ID --publicurl http://"$GLANCE_IP":9292/v2 --adminurl http://"$GLANCE_IP":9292/v2 --internalurl http://"$GLANCE_IP":9292/v2
 
 #object-store
-keystone --token $SERVICE_TOKEN --endpoint $SERVICE_ENDPOINT endpoint-create --region $KEYSTONE_REGION --service-id=$SWIFT_ID --publicurl http://"$SWIFT_IP":8080/v1/AUTH_\$\(tenant_id\)s --adminurl http://"$SWIFT_IP":8080/v1 --internalurl http://"$SWIFT_IP":8080/v1/AUTH_\$\(tenant_id\)s
+#keystone --token $SERVICE_TOKEN --endpoint $SERVICE_ENDPOINT endpoint-create --region $KEYSTONE_REGION --service-id=$SWIFT_ID --publicurl http://"$SWIFT_IP":8080/v1/AUTH_\$\(tenant_id\)s --adminurl http://"$SWIFT_IP":8080/v1 --internalurl http://"$SWIFT_IP":8080/v1/AUTH_\$\(tenant_id\)s
 
 #ec2
 keystone --token $SERVICE_TOKEN --endpoint $SERVICE_ENDPOINT endpoint-create --region $KEYSTONE_REGION --service-id=$EC2_ID --publicurl http://"$EC2_IP":8773/services/Cloud --adminurl http://"$EC2_IP":8773/services/Admin --internalurl http://"$EC2_IP":8773/services/Cloud
 
 #ceilometer
-keystone --token $SERVICE_TOKEN --endpoint $SERVICE_ENDPOINT endpoint-create --region $KEYSTONE_REGION --service-id=$CEILOMETER_ID --publicurl http://"$CEILOMETER_IP":8777 --adminurl http://"$CEILOMETER_IP":8777 --internalurl http://"$CEILOMETER_IP":8777
+#keystone --token $SERVICE_TOKEN --endpoint $SERVICE_ENDPOINT endpoint-create --region $KEYSTONE_REGION --service-id=$CEILOMETER_ID --publicurl http://"$CEILOMETER_IP":8777 --adminurl http://"$CEILOMETER_IP":8777 --internalurl http://"$CEILOMETER_IP":8777
