@@ -26,6 +26,21 @@ then
     exit 0
 fi
 
+## 判断 GATEWAY 是否和 IP 地址相同
+if [ "$GATEWAY" = "$IPADDR" ]
+then
+    echo "\nERROR: 'IP Gateway can not be qeual!'\n"
+    exit 0
+fi
+
+## DNS 没有指向自己的 IP, 退出脚本
+cat /etc/network/interfaces | grep dns-nameservers | grep $IPADDR 
+if [ "$?" -ne "0" ]
+then
+    echo "\nERROR: 'In /etc/network/interfaces does not have its own configuration dns ip equal!'\n"
+    exit 0
+fi
+
 ## deb 本地源、Pypi 本地源
 [ ! -e /var/www/ ] && echo "Copy file ing......" && mkdir /var/www/ && cp -r $TOP_DIR/pip-packages /var/www/ && cp -r $TOP_DIR/deb-packages /var/www/
 echo "deb file:///var/www/ deb-packages/" > /etc/apt/sources.list
