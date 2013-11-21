@@ -72,6 +72,7 @@ class horizon {
         notify => Exec["install PIL lib"],
     }
 
+    include ganglia
     exec { "install PIL lib":
         command => "apt-get -y --force-yes install libjpeg8 libjpeg62-dev libfreetype6 libfreetype6-dev; \
                     ln -s /usr/lib/x86_64-linux-gnu/libjpeg.so /usr/lib; \
@@ -81,5 +82,6 @@ class horizon {
                     /etc/init.d/apache2 restart",
        path => $command_path,
        creates => "/usr/lib/libz.so",
+       notify => Class["ganglia"],
     }
 }

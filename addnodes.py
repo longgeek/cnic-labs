@@ -104,12 +104,26 @@ def write_conf(data):
                       node_info["mac"], node_info["ip"]))
 
         # 找出 Puppet Class 执行的顺序
-        class_order = 'Class["bases"] -> Class["all-sources"]'
+        if ('horizon' in node_info['type']) and ('ceilometer' not in node_info['type']):
+            class_order = 'Class["bases"] -> Class["all-sources"] -> Class["ceilometer-client"]'
+            include_module = 'include bases, all-sources, ceilometer-client, '
+
+        elif 'horizon' in node_info['type'] and ('ceilometer' in node_info['type']):
+            class_order = 'Class["bases"] -> Class["all-sources"]'
+            include_module = 'include bases, all-sources, '
+
+        elif ('ceilometer' in node_info['type']) and ('horizon' not in node_info['type']):
+            class_order = 'Class["bases"] -> Class["all-sources"] -> Class["ganglia-client"]'
+            include_module = 'include bases, all-sources, ganglia-client, '
+
+        else:
+            class_order = 'Class["bases"] -> Class["all-sources"] -> Class["ganglia-client"] -> Class["ceilometer-client"]'
+            include_module = 'include bases, all-sources, ganglia-client, ceilometer-client, '
+            
         for types in node_info["type"]:
             class_order += ' -> Class["%s"]' % types
                 
         # 拿到节点需要 include 的模块
-        include_module = 'include bases, all-sources, '
         for types in node_info["type"]:
             include_module += '%s' % types
             if types != node_info["type"][-1]:

@@ -5,11 +5,11 @@ os_auth_url = http://<%= keystone_host %>:35357/v2.0
 os_tenant_name = <%= service_tenant_name %>
 os_password = <%= service_password %>
 os_username = ceilometer
-os_endpoint = http://<%= keystone_host %>:8777
+os_endpoint = http://<%= ceilometer_api_host %>:8777
 policy_file = /etc/ceilometer/policy.json
 notification_topics = notifications,glance_notifications
 rabbit_password = <%= rabbit_password %>
-rabbit_host = <%= keystone_host %>
+rabbit_host = <%= rabbit_host %>
 rabbit_max_retries = 10
 rpc_backend = ceilometer.openstack.common.rpc.impl_kombu
 database_connection=mongodb://127.0.0.1:27017/ceilometer
