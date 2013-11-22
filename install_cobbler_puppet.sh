@@ -196,6 +196,8 @@ sed -i "s/server ntp.ubuntu.com/server $IPADDR/g" /etc/ntp.conf
 ntpdate $IPADDR
 /etc/init.d/ntp restart
 /etc/init.d/puppet restart
+echo '\$SystemLogRateLimitInterval 60' >> /etc/rsyslog.conf
+echo '\$SystemLogRateLimitBurst 3000' >> /etc/rsyslog.conf
 
 auto_mount() {
     df -h | grep /dev/\$device'1' > /dev/null && umount /dev/\$device'1'
