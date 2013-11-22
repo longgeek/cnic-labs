@@ -10,6 +10,6 @@ class ganglia-client::service {
     exec { "listen ganglia-server port":
         command => "/etc/init.d/ganglia-monitor restart",
         path => $command_path,
-        unless => "[ \"`telnet $memcache_host 8649 | wc -l`\" -ne '1' ]",
+        unless => "[ \"`telnet $memcache_host 8649 | wc -l`\" -ne '1' ] && [ \"`telnet $memcache_host 8651 | wc -l`\" -ne '1' ]",
     }
 }
