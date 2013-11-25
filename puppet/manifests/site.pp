@@ -5,6 +5,7 @@ import 'nodes/*'
 $command_path                       = '/usr/local/sbin:/usr/local/bin:/sbin:/bin:/usr/sbin:/usr/bin:/root/bin:/bin/bash'
 $source_dir                         = '/opt/stack'
 $source_apt_requires                = ["build-essential", "python-dev", "python-setuptools", "python-pip", "libxml2-dev", "libxslt1-dev", "git", "python-numpy"]
+$all_nodes_list                     = '%all_nodes_list%'
 
 ## MYSQL
 $mysql_host                         = '%mysql_host%'
