@@ -122,7 +122,7 @@ cobbler sync || sleep 5 && cobbler sync
 
 #--------------------------------- Puppet -------------------------------------
 
-echo "$IPADDR  $(hostname)" >> /etc/hosts
+echo "$IPADDR $(hostname)" >> /etc/hosts
 
 ## 配置 Puppet
 apt-get -y --force-yes install puppetmaster || exit 1
