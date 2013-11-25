@@ -1,0 +1,10 @@
+#!/bin/env/python
+
+import os
+
+receive_host = os.popen("ls /var/lib/ganglia/rrds/ECCP/ | grep -v '__SummaryInfo__'").read().rstrip().split("\n")
+all_host = os.popen("telnet <%= memcache_host %> 8649 | grep '^<HOST' | awk -F '\"' '{print $2}'").read().rstrip().split("\n")
+
+for host in all_host:
+    if host not in receive_host:
+        os.system("exec su -s /bin/sh -c \"exec ssh %s sudo /etc/init.d/ganglia-monitor start\" nova" % host)

@@ -4,12 +4,12 @@ class ganglia-client::service {
         path => $command_path,
         refreshonly => true,
         require => Class["ganglia-client::config"],
-        notify => Exec["listen ganglia-server port"],
+        notify => Exec["ganglia-monitor status"],
     }
 
-    exec { "listen ganglia-server port":
+    exec { "ganglia-monitor status":
         command => "/etc/init.d/ganglia-monitor restart",
         path => $command_path,
-        unless => "[ \"`telnet $memcache_host 8649 | wc -l`\" -ne '1' ] && [ \"`telnet $memcache_host 8651 | wc -l`\" -ne '1' ]",
+        unless => "ps aux | grep -v grep | grep gmond",
     }
 }
