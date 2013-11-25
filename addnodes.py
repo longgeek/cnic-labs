@@ -29,6 +29,7 @@ puppet_site = "/etc/puppet/manifests/site.pp"
 puppet_hosts = "/etc/puppet/modules/bases/templates/hosts.erb"
 power_type = ['ilo', 'ipmilan', 'ipmitool', 'rsa']
 glusterfs_list = []
+all_nodes_list = []
 
 def write_conf(data):
 
@@ -76,6 +77,8 @@ def write_conf(data):
         # 把解析记录写到 puppet 得 bases 模块中
         puppet_hosts_conf.write("%s %s\n" % (node_info["ip"], 
                                     node_info["hostname"]))
+
+        all_nodes_list.append(node_info["hostname"])
 
         # 配置了远控卡信息
         if node_info["power-type"] and node_info["power-address"] and \
@@ -206,6 +209,8 @@ def write_conf(data):
     # 在 site.pp 中写入所有得 glusterfs 节点列表
     os.system("sed -i '/^$glusterfs_nodes_list.*$/ s/=.*$/= \"%s\"/g' %s" %
                                              (' '.join(glusterfs_list), puppet_site))
+    os.system("sed -i '/^$all_nodes_list.*$/ s/=.*$/= \"%s\"/g' %s" %
+                                       (' '.join(all_nodes_list), puppet_site))
   
     # 关闭文件
     dns_conf_content.close()
