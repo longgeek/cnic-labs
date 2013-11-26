@@ -58,7 +58,8 @@ class horizon {
     }
     
     exec { "memcache listen":
-        command => "sed -i 's/127.0.0.1/0.0.0.0/g' /etc/memcached.conf",
+        command => "sed -i 's/127.0.0.1/0.0.0.0/g' /etc/memcached.conf; \
+                    /etc/init.d/memcached restart",
         path => $command_path,
         unless => "grep 0.0.0.0 /etc/memcached.conf",
         notify => Service["apache2", "memcached"],
