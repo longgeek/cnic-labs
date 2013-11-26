@@ -249,3 +249,18 @@ d-i     preseed/late_command string true && \\
 _GEEK_
 
 cobbler sync; /etc/init.d/cobbler restart
+
+# ECCP Web -----------------------------------------
+apt-get -y --force-yes install nginx php5-fpm php5-sqlite
+cp $TOP_DIR/eccp-web/default /etc/nginx/sites-available/
+rm -fr /usr/share/nginx/www/index.html
+cp -r  $TOP_DIR/eccp-web/www /usr/share/nginx/www/
+cp www.conf /etc/php5/fpm/pool.d/
+/etc/init.d/php5-fpm restart
+/etc/init.d/nginx restart
+
+ps aux | grep -v grep | grep 'puppet master'
+if [ "$?" -ne "0" ]; then
+    /etc/init.d/puppetmaster start
+fi
+echo 3 > /proc/sys/vm/drop_caches
