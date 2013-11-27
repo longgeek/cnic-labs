@@ -31,7 +31,7 @@ STATIC_URL = '/static/'
 ROOT_URLCONF = 'openstack_dashboard.urls'
 
 HORIZON_CONFIG = {
-    'dashboards': ('instances', 'containers', 'settings', 'user', 'index', 'resource', 'event','nova','enduser','savanna'),
+    'dashboards': ('index', 'instances', 'containers', 'settings', 'resource', 'user', 'event', 'enduser','savanna'),
     'user_lastseen_timeout': 600,
     'default_dashboard': 'instances',
     'user_home': 'horizon.views.base.get_user_home',
@@ -106,7 +106,6 @@ INSTALLED_APPS = (
     'django.contrib.humanize',
     'compressor',
     'horizon',
-    'horizon.dashboards.nova',
     'horizon.dashboards.instances',
     'horizon.dashboards.containers',
     'horizon.dashboards.settings',
