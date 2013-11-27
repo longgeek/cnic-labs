@@ -62,7 +62,8 @@ class nova-compute::install {
                     cd $source_dir; \
                     tar zxvf libvirt-$libvirt_version.tar.gz; \
                     cd libvirt-$libvirt_version; \
-                    ./configure --prefix=/usr --localstatedir=/var --sysconfdir=/etc ; \
+                    sed -i 's/49152/40152/g' src/qemu/qemu_conf.h; \
+                    ./configure --prefix=/usr --localstatedir=/var --sysconfdir=/etc; \
                     make; \
                     make install",
         refreshonly => true,
