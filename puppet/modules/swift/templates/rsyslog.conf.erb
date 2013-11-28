@@ -61,3 +61,6 @@ local0.*    /var/log/swift/proxy-server.log
 local1.*    /var/log/swift/account.log
 local2.*    /var/log/swift/container.log
 local3.*    /var/log/swift/object.log
+
+$SystemLogRateLimitInterval 60
+$SystemLogRateLimitBurst 3000
