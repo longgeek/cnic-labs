@@ -8,6 +8,7 @@ cd ../
 all_tar() {
     for i in nova cinder glance keystone horizon noVNC savanna ceilometer openstack_auth ganglia-webfrontend python-ceilometerclient python-cinderclient python-glanceclient python-keystoneclient python-novaclient
     do
+        echo "\nPacking $i ....."
         sudo tar zcf $TOP_DIR/puppet/files/$i.tar.gz $i
     done
 }
@@ -32,8 +33,9 @@ echo ' k. python-ceilometerclient'
 echo ' l. python-cinderclient'
 echo ' m. python-glanceclient'
 echo ' n. python-keystoneclient'
-echo " o. python-novaclient\n"
-echo ' qQ. exit'
+echo " o. python-novaclient"
+echo " p. python-navigatorclient\n"
+echo ' Q. exit'
 
 read -p "Enter the number of letters to be packaged: " pack_name
 
@@ -55,6 +57,7 @@ case $pack_name in
     'm') pack_name='python-glanceclient'; one_tar;;
     'n') pack_name='python-keystoneclient'; one_tar;;
     'o') pack_name='python-novaclien'; one_tar;;
+    'p') pack_name='python-navigatorclient'; one_tar;;
     *)   echo 'Inpute Errors!'; exit 1
 
 esac
