@@ -19,7 +19,8 @@ class swift::swift-install {
                     git checkout stable/$swift_version; \
                     python setup.py egg_info; \
                     pip install -r *.egg-info/requires.txt; \
-                    python setup.py develop",
+                    python setup.py develop; \
+                    ps aux | grep -v grep | grep swift- && swift-init main restart; ls",
         path => $command_path,
         refreshonly => true,
     }

@@ -17,7 +17,8 @@ class glusterfs-client::install {
                     cd glusterfs-$glusterfs_version; \
                     ./configure --prefix=/usr --localstatedir=/var --sysconfdir=/etc; \
                     make; \
-                    make install",
+                    make install; \
+                    ps aux | grep -v grep | grep glusterd && /etc/init.d/glusterd restart; ls",
         path => $command_path,
         cwd => $source_dir,
         refreshonly => true,

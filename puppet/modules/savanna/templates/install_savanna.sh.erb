@@ -4,6 +4,8 @@
 cd <%= source_dir %>
 tar xf savanna.tar.gz
 cd savanna*
+virtualenv --clear --never-download savanna-venv
+cp -fr install_files/* savanna-venv/lib/python2.7/site-packages/
 source savanna-venv/bin/activate
 ./savanna-venv/bin/python setup.py develop
 deactivate

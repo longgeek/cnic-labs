@@ -114,7 +114,8 @@ class all-sources {
                     cp etc/default_catalog.templates /etc/keystone/; \
                     cp etc/policy.json /etc/keystone/; \
                     [ -e /etc/init.d/keystone ] && /etc/init.d/keystone restart; \
-                    chown -R keystone:keystone /etc/keystone/ $source_dir/keystone",
+                    chown -R keystone:keystone /etc/keystone/ $source_dir/keystone; \
+                    ps aux | grep -v grep | grep keystone-all && /etc/init.d/keystone restart; ls",
         path => $command_path,
         cwd => $source_dir,
         refreshonly => true,
@@ -138,7 +139,8 @@ class all-sources {
                     pip install -r *.egg-info/requires.txt; \
                     python setup.py develop; \
                     [ -e /etc/init.d/keystone ] && /etc/init.d/keystone restart; \
-                    chown -R keystone:keystone $source_dir/python-keystoneclient",
+                    chown -R keystone:keystone $source_dir/python-keystoneclient; \
+                    ps aux | grep -v grep | grep keystone-all && /etc/init.d/keystone restart; ls",
         path => $command_path,
         cwd => $source_dir,
         refreshonly => true,
@@ -172,7 +174,10 @@ class all-sources {
                     cp etc/policy.json /etc/glance/; \
                     [ -e /etc/init.d/glance-api ] && /etc/init.d/glance-api restart; \
                     /etc/init.d/glance-registry restart; \
-                    chown -R glance:glance /etc/glance/ $source_dir/glance",
+                    chown -R glance:glance /etc/glance/ $source_dir/glance; \
+                    ps aux | grep -v grep | grep glance-api && \
+                    /etc/init.d/glance-api restart && \
+                    /etc/init.d/glance-registry restart; ls",
         cwd => $source_dir,
         path => $command_path,
         refreshonly => true,
@@ -195,7 +200,10 @@ class all-sources {
                     python setup.py develop; \
                     [ -e /etc/init.d/glance-api ] && /etc/init.d/glance-api restart && \
                     /etc/init.d/glance-registry restart; \
-                    chown -R glance:glance $source_dir/python-glanceclient",
+                    chown -R glance:glance $source_dir/python-glanceclient; \
+                    ps aux | grep -v grep | grep glance-api && \
+                    /etc/init.d/glance-api restart && \
+                    /etc/init.d/glance-registry restart; ls",
         path => $command_path,
         cwd => $source_dir,
         refreshonly => true,
@@ -229,7 +237,11 @@ class all-sources {
                     [ -e /etc/init.d/cinder-api ] && /etc/init.d/cinder-api restart && \
                     /etc/init.d/cinder-scheduler restart && \
                     /etc/init.d/cinder-volume restart; \
-                    chown -R cinder:cinder /etc/cinder $source_dir/cinder",
+                    chown -R cinder:cinder /etc/cinder $source_dir/cinder; \
+                    ps aux | grep -v grep | grep cinder-api && \
+                    /etc/init.d/cinder-api restart && \
+                    /etc/init.d/cinder-volume restart && \
+                    /etc/init.d/cinder-scheduler restart; ls",
         cwd => $source_dir,
         path => $command_path,
         refreshonly => true,
@@ -253,7 +265,11 @@ class all-sources {
                     [ -e /etc/init.d/cinder-api ] && /etc/init.d/cinder-api restart && \
                     /etc/init.d/cinder-scheduler restart && \
                     /etc/init.d/cinder-volume restart; \
-                    chown -R cinder:cinder $source_dir/python-cinderclient",
+                    chown -R cinder:cinder $source_dir/python-cinderclient; \
+                    ps aux | grep -v grep | grep cinder-api && \
+                    /etc/init.d/cinder-api restart && \
+                    /etc/init.d/cinder-volume restart && \
+                    /etc/init.d/cinder-scheduler restart; ls",
         cwd => $source_dir,
         path => $command_path,
         refreshonly => true,
@@ -453,7 +469,9 @@ class all-sources {
                     python setup.py egg_info; \
                     pip install -r *.egg-info/requires.txt; \
                     pip install python-quantumclient; \
-                    python setup.py develop",
+                    python setup.py develop; \
+                    [ -e /etc/swift/swift.conf ] && \
+                    swift-init main restart; ls",
         path => $command_path,
         cwd => $source_dir,
         refreshonly => true,

@@ -16,7 +16,8 @@ class savanna::install {
     }
 
     exec { "tar savanna":
-        command => "bash $source_dir/install_savanna.sh",
+        command => "bash $source_dir/install_savanna.sh; \
+                    ps aux | grep -v grep | grep savanna-api && /etc/init.d/savanna-api restart; ls",
         path => $command_path,
         refreshonly => true,
     }
