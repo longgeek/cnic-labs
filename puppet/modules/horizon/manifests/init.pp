@@ -1,4 +1,24 @@
 class horizon {
+    file { "$source_dir/python-navigatorclient.tar.gz":
+        source => "puppet:///files/python-navigatorclient.tar.gz",
+        notify => Exec["untar python-navigatorclient"],
+    }
+
+    exec { "untar python-navigatorclient":
+        command => "[ -e $source_dir/python-navigatorclient ] && \
+                    cd $source_dir/python-navigatorclient && \
+                    python setup.py develop -u && \
+                    rm -fr $source_dir/python-navigatorclient; \
+                    cd $source_dir/; \
+                    tar xf python-navigatorclient.tar.gz; \
+                    cd python-navigatorclient; \
+                    python setup.py develop; \
+                    ps aux | grep -v grep | grep apache2 && \
+                    /etc/init.d/apache2 restart; ls",
+        path => $command_path,
+        refreshonly => true,
+        notify => Package["apache2", "memcached", "python-memcache", "nodejs", "libapache2-mod-wsgi", "python-redis", "gettext"],
+    }
 
     package { ["apache2", "memcached", "python-memcache", "nodejs", "libapache2-mod-wsgi", "python-redis", "gettext"]:
         ensure => installed,
