@@ -4,6 +4,7 @@ set -x
 
 # 一些基本的变量
 TOP_DIR=$(cd $(dirname "$0") && pwd)
+echo "ECCP_DIR=$TOP_DIR" >> /etc/profile
 COBBLER_WEB_PORT=12001
 IFACE=eth0
 ROOT_PASSWD="eccp"
@@ -47,7 +48,7 @@ echo "deb file:///var/www/ deb-packages/" > /etc/apt/sources.list
 apt-get update || exit 0
 
 ## 安装相关软件包
-apt-get -y --force-yes install cobbler cobbler-web dnsmasq debmirror ntp || exit 0
+apt-get -y --force-yes install cobbler cobbler-web dnsmasq debmirror ntp lvm2 unzip || exit 0
 
 ## 修改 Cobbler 配置文件
 COBBLER_PATH='/etc/cobbler/settings'
@@ -125,7 +126,7 @@ cobbler sync || sleep 5 && cobbler sync
 echo "$IPADDR $(hostname)" >> /etc/hosts
 
 ## 配置 Puppet
-apt-get -y --force-yes install puppetmaster || exit 1
+apt-get -y --force-yes install puppetmaster puppet || exit 1
 sed -i "s/my_ip/$IPADDR/g" $TOP_DIR/puppet/modules/all-sources/templates/pip.conf.erb
 sed -i "s/my_ip/$IPADDR/g" $TOP_DIR/puppet/modules/all-sources/templates/pydistutils.cfg.erb
 cp -r $TOP_DIR/puppet/* /etc/puppet/
@@ -138,7 +139,12 @@ cat > /etc/puppet/autosign.conf << _GEEK_
 _GEEK_
 
 /etc/init.d/puppetmaster restart
-apt-get -y remove --purge puppet
+#apt-get -y remove --purge puppet
+sed -i 's/-q -y/-q -y --force-yes/g' /usr/lib/ruby/1.8/puppet/provider/package/apt.rb
+sed -i 's/no/yes/g' /etc/default/puppet
+sed -i "s/server=.*$/server=`hostname`/g" /etc/puppet/puppet.conf
+/etc/init.d/puppet restart
+/etc/init.d/puppetmaster restart
 
 # Puppet Agent--------------------------------------
 
@@ -237,6 +243,16 @@ do
         fi
     fi
 done
+cat > /etc/rc.local << _RC_
+#!/bin/bash
+
+tail -n 10 /var/log/syslog  | grep 'puppet Puppet configuration client --enable'
+if [ "\\\$?" -eq "0" ]; then
+    puppet agent --enable
+    /etc/init.d/puppet restart
+fi
+exit 0
+_RC_
 _GEEK_
 
 chmod +x /var/www/post.sh
