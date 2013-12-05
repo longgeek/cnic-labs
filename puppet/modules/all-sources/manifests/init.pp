@@ -303,7 +303,7 @@ class all-sources {
                     cp -r etc/nova/rootwrap.d /etc/nova/; \
                     cp etc/nova/policy.json /etc/nova/; \
                     chown -R nova:root /etc/nova/; \
-                    [ -e /etc/init.d/nova-api ] && /etc/init.d/nova-api restart; \
+                    [ -e /etc/init.d/nova-api ] && nova-manage db sync && /etc/init.d/nova-api restart; \
                     echo 'restart services'; \
                     [ -e /etc/init.d/nova-compute ] && /etc/init.d/nova-compute restart; \
                     echo 'restart services'; \
