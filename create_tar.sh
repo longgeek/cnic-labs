@@ -6,7 +6,7 @@ cd $TOP_DIR
 cd ../
 
 all_tar() {
-    for i in nova cinder glance keystone horizon noVNC savanna ceilometer openstack_auth ganglia-webfrontend python-ceilometerclient python-cinderclient python-glanceclient python-keystoneclient python-novaclient
+    for i in nova cinder glance keystone horizon noVNC savanna ceilometer openstack_auth ganglia-webfrontend python-ceilometerclient python-cinderclient python-glanceclient python-keystoneclient python-novaclient python-navigatorclient
     do
         echo "\nPacking $i ....."
         sudo tar zcf $TOP_DIR/puppet/files/$i.tar.gz $i
