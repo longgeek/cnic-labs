@@ -1,4 +1,6 @@
 class keystone::install {
+    Exec["keystone upstart"] -> File["/etc/init/keystone.conf"] -> File["/etc/keystone/logging.conf"] -> File["/etc/keystone/keystone.conf"] -> Exec["keystone-db-sync"] -> File["/etc/keystone/keystone.sh"] -> Exec["sh keystone.sh"]
+
     exec { "keystone upstart":
         command => "ln -s /lib/init/upstart-job /etc/init.d/keystone",
         path => $command_path,
