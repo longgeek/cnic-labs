@@ -31,9 +31,9 @@ STATIC_URL = '/static/'
 ROOT_URLCONF = 'openstack_dashboard.urls'
 
 HORIZON_CONFIG = {
-    'dashboards': ('index', 'instances', 'containers', 'settings', 'resource', 'user', 'event', 'enduser',),
+    'dashboards': ('index', 'instances', 'volumes', 'containers', 'security', 'ceilometer', 'manager', 'enduser'),
     'user_lastseen_timeout': 600,
-    'default_dashboard': 'instances',
+    'default_dashboard': 'index',
     'user_home': 'horizon.views.base.get_user_home',
     'ajax_queue_limit': 10,
     'help_url': "http://docs.openstack.org",
@@ -105,13 +105,13 @@ INSTALLED_APPS = (
     'django.contrib.humanize',
     'compressor',
     'horizon',
-    'horizon.dashboards.instances',
-    'horizon.dashboards.containers',
-    'horizon.dashboards.settings',
     'horizon.dashboards.index',
-    'horizon.dashboards.user',
-    'horizon.dashboards.resource',
-    'horizon.dashboards.event',
+    'horizon.dashboards.instances',
+    'horizon.dashboards.volumes',
+    'horizon.dashboards.containers',
+    'horizon.dashboards.security',
+    'horizon.dashboards.ceilometer',
+    'horizon.dashboards.manager',
     'horizon.dashboards.enduser',
     'openstack_auth',
     'captcha',
@@ -147,6 +147,8 @@ LANGUAGE_CODE = 'zh-cn'
 USE_I18N = True
 USE_L10N = False
 USE_TZ = True
+
+TIME_ZONE = 'Asia/Shanghai'
 
 OPENSTACK_KEYSTONE_DEFAULT_ROLE = 'Member'
 
