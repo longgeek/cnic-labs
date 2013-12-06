@@ -109,7 +109,7 @@ class all-sources {
                     cd keystone; \
                     python setup.py egg_info; \
                     pip install -r *.egg-info/requires.txt; \
-                    pip install keyring; \
+                    pip install keyring SQLAlchemy sqlalchemy-migrate; \
                     python setup.py develop; \
                     cp etc/default_catalog.templates /etc/keystone/; \
                     cp etc/policy.json /etc/keystone/; \
