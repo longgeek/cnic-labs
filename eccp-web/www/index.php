@@ -41,7 +41,7 @@ require ('include/function.php');
 <div class="toolbox_block">
 
 <table id="statscic_roles">
-<tr><th width="128">服务名称</th><th>分配数量</th><th>状态</th></tr>
+<tr><th width="220">服务名称</th><th>数量</th><th>状态</th></tr>
 </table>
 
 <p>
@@ -128,10 +128,10 @@ foreach ($machines as $machine) {
 <select class="m_roles_select" id="m_<?php echo $machine['id'] ?>_roles_select" onchange="ui_update_roles_select_onselect(<?php echo $machine['id'] ?>)">
 <option class="m_roles_select_extra" value='-1'>请选择一个服务角色</option>
 <?php foreach ($roles as $role) {
-	?><option class="m_roles_select_option" value='<?php echo $role['id'] ?>'><?php echo $role['name'] ?></option><?php
+	?><option class="m_roles_select_option" value='<?php echo $role['id'] ?>'><?php echo $role['title'] ?></option><?php
 } ?>
 </select>
-<input id="m_<?php echo $machine['id'] ?>_roles_add" disabled="disabled" type="button" value="添加角色" onclick="action_role_add(<?php echo $machine['id'] ?>); return false;" />
+<input id="m_<?php echo $machine['id'] ?>_roles_add" disabled="disabled" type="button" value="添加" onclick="action_role_add(<?php echo $machine['id'] ?>); return false;" />
 <script language="javascript">
 ui_update_roles_of_machine(<?php echo $machine['id'] ?>);
 </script>

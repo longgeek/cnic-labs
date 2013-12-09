@@ -139,6 +139,7 @@ function action_machine_deploy () {
 	//exec('python test.py', $res, $rc);
 	$count_line = count($res);
 	if($count_line == 0) {
+		echo '{"return": 0, "type": 0}';
 	} else {
 		echo $res[$count_line -1];
 	}
@@ -159,15 +160,18 @@ function action_machine_del () {
 	$json_result =  json_encode($items);
 	$str = 'python "/opt/eccp/auto_install_eccp/delnodes.py" \''.$json_result.'\'';
 
-	exec('sudo -u root -S '.$str, $res, $rc);
+	//exec('sudo -u root -S '.$str, $res, $rc);
 	//exec('python test.py', $res, $rc);
-	print_r($res);
-	echo $rc;
+	//print_r($res);
+	//echo $rc;
+	
 	
 	
 	$database =  new DataBase();
 	$id_machine =  $_REQUEST['id_machine'];
 	$database->delete_machine_with_id($id_machine);
+	
+	echo '{"return":1}';
 }
 
 function action_deploy () {

@@ -9,7 +9,11 @@
 <?php
 
 $file = '/var/log/syslog';
-readfile($file);
+
+if (!is_readable ($file)) {
+	chmod($file, 0644);
+	readfile($file);
+}
 
 ?>
 </body>

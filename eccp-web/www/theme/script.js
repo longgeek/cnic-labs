@@ -65,7 +65,10 @@ function action_machine_del(id_machine) {
 	ui_notice_show_loading()
 	ui_notice_show ('删除');
 	var jqxhr = $.get("action.php?action=machine_del",  { "id_machine": id_machine }, function(data) {
-		ui_notice_show_message(data)
+		result = $.parseJSON(data);
+		if (result.return==1) {
+			ui_notice_show_message('删除成功，注意，已经服务器上的程序和数据保持不变，请自行删除。')
+		}
 		//window.location.reload();
 	})
 	.fail(function() { action_error() })
@@ -76,7 +79,10 @@ function action_machine_reset(id_machine) {
 	ui_notice_show_loading()
 	ui_notice_show ('重置');
 	var jqxhr = $.get("action.php?action=machine_reset",  { "id_machine": id_machine }, function(data) {
-		ui_notice_show_message(data)
+		result = $.parseJSON(data);
+		if (result.return==1) {
+			ui_notice_show_message('重置成功')
+		}
 	})
 	.fail(function() { action_error() })
 }
@@ -119,7 +125,10 @@ function action_deploy() {
 	ui_notice_show ('全部部署');
 	
 	var jqxhr = $.get("action.php?action=deploy",  { }, function(data) {
-		ui_notice_show_message(data)
+		result = $.parseJSON(data);
+		if (result.return==1) {
+			ui_notice_show_message('部署成功')
+		}
 	})
 	.fail(function() { action_error() })
 }
@@ -131,7 +140,7 @@ function ui_update_roles_of_machine(id_machine) {
 		result = '';
 		
 		for (i=0; i<length; i++) {
-			result += '<div class="machine_role"><span>' + data[i].name + '</span><input type="button" value="删除"  onclick="action_role_del ( ' + id_machine + ', ' + data[i].id + '); return false;" /></div>'
+			result += '<div class="machine_role"><span>' + data[i].title + '</span><input type="button" value="删除"  onclick="action_role_del ( ' + id_machine + ', ' + data[i].id + '); return false;" /></div>'
 		}
 		 
 		  $('#m_' + id_machine + '_roles').html(result);

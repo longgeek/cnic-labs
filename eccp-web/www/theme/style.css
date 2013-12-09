@@ -260,7 +260,7 @@ select, option {
 
 .machine_roles {
 	float:left;
-	padding:0px 24px;
+	padding:0px 8px 0px 16px;
 }
 
 .machine_role span {
