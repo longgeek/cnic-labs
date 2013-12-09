@@ -5,7 +5,7 @@ set -x
 # 一些基本的变量
 TOP_DIR=$(cd $(dirname "$0") && pwd)
 echo "ECCP_DIR=$TOP_DIR" >> /etc/profile
-COBBLER_WEB_PORT=12001
+COBBLER_WEB_PORT=12002
 IFACE=eth0
 ROOT_PASSWD="eccp"
 IPADDR=$(ifconfig $IFACE | awk '/inet addr/ {print $2}' | awk -F: '{print $2}')
