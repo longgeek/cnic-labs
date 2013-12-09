@@ -4,7 +4,6 @@ set -x
 
 # 一些基本的变量
 TOP_DIR=$(cd $(dirname "$0") && pwd)
-echo "ECCP_DIR=$TOP_DIR" >> /etc/profile
 COBBLER_WEB_PORT=12002
 IFACE=eth0
 ROOT_PASSWD="eccp"
@@ -269,6 +268,8 @@ cobbler sync; /etc/init.d/cobbler restart
 # ECCP Web -----------------------------------------
 apt-get -y --force-yes install nginx php5-fpm php5-sqlite
 cp $TOP_DIR/eccp-web/default /etc/nginx/sites-available/
+chmod +x $TOP_DIR/*.py
+cp -p $TOP_DIR/*.py /usr/bin/
 rm -fr /usr/share/nginx/www/index.html
 cp -r  $TOP_DIR/eccp-web/www/* /usr/share/nginx/www/
 chmod 777 /usr/share/nginx/www/

@@ -133,7 +133,7 @@ function action_machine_deploy () {
 		array_push($items, $item);
 	
 	$json_result =  json_encode($items);
-	$str = 'python "/opt/eccp/auto_install_eccp/addnodes.py" \''.$json_result.'\'';
+	$str = 'python "/usr/bin/addnodes.py" \''.$json_result.'\'';
 
 	exec('sudo -u root -S '.$str, $res, $rc);
 	//exec('python test.py', $res, $rc);
@@ -158,7 +158,7 @@ function action_machine_del () {
 		array_push($items, $item);
 	
 	$json_result =  json_encode($items);
-	$str = 'python "/opt/eccp/auto_install_eccp/delnodes.py" \''.$json_result.'\'';
+	$str = 'python "/usr/bin/delnodes.py" \''.$json_result.'\'';
 
 	//exec('sudo -u root -S '.$str, $res, $rc);
 	//exec('python test.py', $res, $rc);
@@ -188,7 +188,7 @@ function action_deploy () {
 	}
 	
 	$json_result =  json_encode($items);
-	$str = 'python "/opt/eccp/auto_install_eccp/addnodes.py" \''.$json_result.'\'';
+	$str = 'python "/usr/bin/addnodes.py" \''.$json_result.'\'';
 	echo $str."\r\n";
 	exec('sudo -u root -S '.$str, $res, $rc);
 	//exec('python test.py', $res, $rc);
