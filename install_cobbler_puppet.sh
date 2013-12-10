@@ -84,7 +84,7 @@ cat > /etc/cobbler/dnsmasq.template << _GEEK_
 #no-poll
 #enable-dbus
 read-ethers
-addn-hosts = /var/lib/cobbler/cobbler_hosts
+addn-hosts = /etc/puppet/modules/bases/templates/hosts.erb
 domain=$(hostname | awk -F. '{print $2"."$3}')
 interface=$IFACE
 dhcp-range=$(echo $IPADDR | awk -F. '{print $1"."$2"."$3}').0,static
@@ -282,4 +282,7 @@ ps aux | grep -v grep | grep 'puppet master'
 if [ "$?" -ne "0" ]; then
     /etc/init.d/puppetmaster start
 fi
+
+# www-data nginx 用户添加 sudo 权限
+grep www-data /etc/sudoers || echo 'www-data    ALL=(ALL:ALL) NOPASSWD:ALL' >> /etc/sudoers
 echo 3 > /proc/sys/vm/drop_caches

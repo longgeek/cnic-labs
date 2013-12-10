@@ -19,7 +19,7 @@ import re
 import shutil
 
 if len(sys.argv) != 2:
-    print "Missing or extra positional parameters!"
+    print '{"return": 0, "type": 1, "data": {"message": "Missing or extra positional parameters!"}}'
     exit(1)
 
 # 主要修改的几个配置文件路径
@@ -48,7 +48,8 @@ def write_conf(data):
                 system_file = open("/var/lib/cobbler/config/systems.d/"+system+".json", "r")
                 system_file_content = system_file.read()
                 system_file.close()
-                if node_info["ip"] or node_info["hostname"] or node_info["mac"] in system_file_content:
+                if (node_info["ip"] in system_file_content) or (node_info["hostname"] in system_file_content) \
+                                                            or (node_info["mac"] in system_file_content):
                     os.system("cobbler system remove --name %s" % system)
                
     # 打开文件
@@ -68,7 +69,7 @@ def write_conf(data):
     # 遍历 json 数据
     for node_info in data:
         # 拿到 IP 和 HOSTNAME 写入到 DNS 配置文件
-        print node_info['ip'], node_info['hostname']
+        #print node_info['ip'], node_info['hostname']
         dns_conf_content.write("%s %s\n" % (node_info["ip"], 
                                     node_info["hostname"]))
         # 把 IP、HOSTNAME、MAC 写入到 DHCP 配置文件，做地址绑定
@@ -219,8 +220,7 @@ def write_conf(data):
 
     # 重启服务
     os.system("/etc/init.d/dnsmasq restart > /dev/null 2>&1; /etc/init.d/cobbler restart > /dev/null 2>&1")
-    print 'Done!'
-    return 'Done!'
+    print '{"return": 1, "type": 0}'
 
 if __name__ == "__main__":
     write_conf(eval(sys.argv[1]))
