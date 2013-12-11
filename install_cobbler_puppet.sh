@@ -42,7 +42,8 @@ then
 fi
 
 ## deb 本地源、Pypi 本地源
-[ ! -e /var/www/ ] && echo "Copy file ing......" && mkdir /var/www/ && cp -r $TOP_DIR/pip-packages /var/www/ && cp -r $TOP_DIR/deb-packages /var/www/
+[ ! -e /var/www/ ] && echo "Copy file ing......" && mkdir /var/www/
+cp -r $TOP_DIR/pip-packages /var/www/ && cp -r $TOP_DIR/deb-packages /var/www/
 echo "deb file:///var/www/ deb-packages/" > /etc/apt/sources.list
 apt-get update || exit 0
 
