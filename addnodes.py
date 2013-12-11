@@ -16,7 +16,7 @@ __author__ = [
 import os
 import sys
 import re
-import shutil
+import time
 
 if len(sys.argv) != 2:
     print '{"return": 0, "type": 1, "data": {"message": "Missing or extra positional parameters!"}}'
@@ -27,13 +27,19 @@ dns_conf = "/var/lib/cobbler/cobbler_hosts"
 dhcp_hosts_conf = "/etc/dnsmasq.d/hosts.conf"
 puppet_site = "/etc/puppet/manifests/site.pp"
 puppet_hosts = "/etc/puppet/modules/bases/templates/hosts.erb"
-power_type = ['ilo', 'ipmilan', 'ipmitool', 'rsa']
+power_type = ['ilo', 'ipmilan', 'ipmitool', 'rsa', 'ipmi']
 glusterfs_list = []
 all_nodes_list = []
 
 def write_conf(data):
 
     """本函数通过传递参数来添加节点相关的信息，来修改 DNS、DHCP、PUPPET 和 Cobbler 配置文件."""
+    
+    # 检查 type 是否为空
+    for node_info in data:
+        if node_info['type'] == []:
+            print '{"return": 0, "type": 1, "data": {"message": "%s 节点没有选择要安装的角色"}}' % node_info['ip']
+            exit(1)
 
     # 去掉重复的 ip 或 hostname 或 mac
     for node_info in data:
@@ -85,18 +91,98 @@ def write_conf(data):
         if node_info["power-type"] and node_info["power-address"] and \
            node_info["power-user"] and node_info["power-pass"] != "" \
                                    and node_info["power-type"] in power_type:
-            os.system("cobbler system add --name=%s --hostname=%s \
-                      --profile=$(cobbler profile list | grep ECCP | \
-                      awk '{print $1}') --mac=%s --interface=eth0 \
-                      --ip-address=%s --static=1" % \
-                     (node_info["hostname"], node_info["hostname"], \
-                      node_info["mac"], node_info["ip"]))
+            # 检测本机是否能 ping 通远控卡
+            ping_test = os.popen("ping %s -c 1 > /dev/null 2>&1; echo $?" % node_info["power-address"]).read().rstrip()
 
-            os.system("cobbler system edit --name %s --power-type=%s \
-                      --power-address=%s --power-user %s --power-pass %s" % \
-                     (node_info["hostname"], node_info["power-type"], \
-                      node_info["power-address"], node_info["power-user"], \
-                      node_info["power-pass"]))
+            # ping 不通
+            if ping_test != '0':
+                print '{"return": 0, "type": 1, "data": {"message": "目标主机远控卡地址： %s 不可达，请重新输入地址或检查本机的网络配置. !"}}' % node_info["power-address"]
+                exit (1)
+
+            # 可以ping通
+            else:
+                # 判断是否物理服务器的远控卡是否为 ipmi
+                os.system("nohup ipmitool -U %s -P %s -H %s chassis power status > /dev/null 2>&1 &" % \
+                                    (node_info["power-user"], node_info["power-pass"], node_info["power-address"]))
+
+                time.sleep(2)
+                ipmi_test = os.popen("ps aux | grep '%s chassis power status' | grep -v grep | grep -v 'sh -c' > /dev/null 2>&1; echo $?" % \
+                                                                         node_info["power-address"]).read().rstrip()
+                if ipmi_test != '0':
+                    power_types = 'ipmilan'
+
+                    # 判断物理服务器电源状态
+                    power_status = os.popen("ipmitool -U %s -P %s -H %s chassis power status | awk '{print $NF}'" % \
+                                        (node_info["power-user"], node_info["power-pass"], \
+                                         node_info["power-address"])).read().rstrip()
+
+                    # 设置物理服务器从 pxe 启动一次（临时只从 pxe 启动一次）
+                    os.system("ipmitool -U %s -P %s -H %s chassis bootdev pxe" % \
+                              (node_info["power-user"], node_info["power-pass"], \
+                               node_info["power-address"])).read().rstrip()
+                    
+                    # 电源开启,重新启动
+                    if power_status == 'on':
+                        os.system("ipmitool -U %s -P %s -H %s chassis power reset" % \
+                                  (node_info["power-user"], node_info["power-pass"], \
+                                   node_info["power-address"])).read().rstrip()
+
+                    # 电源关闭,直接启动
+                    if power_status == 'off':
+                        os.system("ipmitool -U %s -P %s -H %s chassis power on" % \
+                                  (node_info["power-user"], node_info["power-pass"], \
+                                   node_info["power-address"])).read().rstrip()
+
+                # 判断是否物理服务器的远控卡是否为 ilo
+                os.system("nohup ipmitool -H %s -I lanplus -U %s -P %s chassis power status > /dev/null 2>&1 &" % \
+                                   (node_info["power-address"], node_info["power-user"], node_info["power-pass"]))
+
+                time.sleep(2)
+                ilo_test = os.popen("ps aux | grep 'ipmitool -H %s -I lanplus' | grep -v grep | grep -v 'sh -c' > /dev/null 2>&1; echo $?" % \
+                                                                         node_info["power-address"]).read().rstrip()
+                if ilo_test != '0':
+                    power_types = 'ilo'
+
+                    # 判断物理服务器电源状态
+                    power_status = os.popen("ipmitool -H %s -I lanplus -U %s -P %s chassis power status | awk '{print $NF}'" % \
+                                                                         (node_info["power-address"], node_info["power-user"], \
+                                                                          node_info["power-pass"])).read().rstrip()
+
+                    # 设置物理服务器从 pxe 启动一次（临时只从 pxe 启动一次）
+                    os.system("ipmitool -H %s -I lanplus -U %s -P %s chassis bootdev pxe" % \
+                              (node_info["power-address"], node_info["power-user"], \
+                               node_info["power-pass"])).read().rstrip()
+                    
+                    # 电源开启,重新启动
+                    if power_status == 'on':
+                        os.system("ipmitool -H %s -I lanplus -U %s -P %s chassis power reset" % \
+                                  (node_info["power-address"], node_info["power-user"], \
+                                   node_info["power-pass"])).read().rstrip()
+
+                    # 电源关闭,直接启动
+                    if power_status == 'off':
+                        os.system("ipmitool -H %s -I lanplus -U %s -P %s chassis power on" % \
+                                  (node_info["power-address"], node_info["power-user"], \
+                                   node_info["power-pass"])).read().rstrip()
+
+                if ipmi_test == '0' and ilo_test == '0':
+                    print '{"return": 0, "type": 1, "data": {"message": "远控卡地址: %s 无法通过验证, 请重新输入远控卡账号及密码."}}' % node_info["power-address"]
+                    exit (1)
+
+                os.system("cobbler system add --name=%s --hostname=%s \
+                          --profile=$(cobbler profile list | grep ECCP | \
+                          awk '{print $1}') --mac=%s --interface=eth0 \
+                          --ip-address=%s --static=1" % \
+                         (node_info["hostname"], node_info["hostname"], \
+                          node_info["mac"], node_info["ip"]))
+
+
+                os.system("cobbler system edit --name %s --power-type=%s \
+                          --power-address=%s --power-user %s --power-pass %s" % \
+                         (node_info["hostname"], power_types, \
+                          node_info["power-address"], node_info["power-user"], \
+                          node_info["power-pass"]))
+                
 
         # 没有使用远控卡
         else:
