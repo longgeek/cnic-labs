@@ -120,7 +120,7 @@ foreach ($machines as $machine) {
 <input type="button"  value="保存" onclick="action_machine_modify(<?php echo $machine['id'] ?>)" />
 <input type="button"  value="删除" onclick="action_machine_del(<?php echo $machine['id'] ?>)" />
 <input type="button"  value="部署" onclick="action_machine_deploy(<?php echo $machine['id'] ?>)" />
-<input type="button"  value="重置" onclick="action_machine_reset(<?php echo $machine['id'] ?>)" />
+<!-- <input type="button"  value="重置" onclick="action_machine_reset(<?php echo $machine['id'] ?>)" /> -->
 </div>
 <div class="machine_roles">
 <div id="m_<?php echo $machine['id'] ?>_roles" class="machine_list_roles">

@@ -53,7 +53,10 @@ function action_machine_add() {
 		alert('MAC地址、IP地址或者主机名有重复，请检查。');
 		return false;
 	}
-	if (!validator('form_machine_add')) return false;
+	if (!validator('form_machine_add')) {
+		alert('MAC地址、IP地址或者主机名有格式错误，请检查。');
+		return false;
+	}
 
 	var jqxhr = $.post("action.php?action=machine_add", data, function(data) {
 		window.location.reload();
@@ -67,7 +70,13 @@ function action_machine_del(id_machine) {
 	var jqxhr = $.get("action.php?action=machine_del",  { "id_machine": id_machine }, function(data) {
 		result = $.parseJSON(data);
 		if (result.return==1) {
-			ui_notice_show_message('删除成功，注意，已经服务器上的程序和数据保持不变，请自行删除。')
+			ui_notice_show_message('删除成功，注意，已经服务器上的程序和数据保持不变，请自行删除。', true)
+		} else {
+			if (result && result.return ==0 && result.data && result.type == 1 && result.data.message) {
+				ui_notice_show_message('删除失败' + "<br />" + result.data.message)
+			} else {
+				ui_notice_show_message('删除失败，原因未知')
+			}
 		}
 		//window.location.reload();
 	})
@@ -82,6 +91,12 @@ function action_machine_reset(id_machine) {
 		result = $.parseJSON(data);
 		if (result.return==1) {
 			ui_notice_show_message('重置成功')
+		} else {
+			if (result && result.return ==0 && result.data && result.type == 1 && result.data.message) {
+				ui_notice_show_message('重置失败' + "<br />" + result.data.message)
+			} else {
+				ui_notice_show_message('重置失败，原因未知')
+			}
 		}
 	})
 	.fail(function() { action_error() })
@@ -96,6 +111,12 @@ function action_machine_deploy(id_machine) {
 		result = $.parseJSON(data);
 		if (result.return==1) {
 			ui_notice_show_message('部署成功')
+		} else {
+			if (result && result.return ==0 && result.data && result.type == 1 && result.data.message) {
+				ui_notice_show_message('部署失败' + "<br />" + result.data.message)
+			} else {
+				ui_notice_show_message('部署失败，原因未知')
+			}
 		}
 	})
 	.fail(function() { action_error() })
@@ -128,6 +149,12 @@ function action_deploy() {
 		result = $.parseJSON(data);
 		if (result.return==1) {
 			ui_notice_show_message('部署成功')
+		} else {
+			if (result && result.return ==0 && result.data && result.type == 1 && result.data.message) {
+				ui_notice_show_message('部署失败' + "<br />" + result.data.message)
+			} else {
+				ui_notice_show_message('部署失败，原因未知')
+			}
 		}
 	})
 	.fail(function() { action_error() })
@@ -158,10 +185,14 @@ function ui_update_roles_select_onselect (id_machine) {
 }
 
 function ui_update_roles_select () {
+
+	// disable all roles
 	$('.m_roles_select_option').attr('disabled','disabled');
 	
 	length_machines = global_machines.length;
 	length_roles = global_roles.length;
+	
+	// get all roles from machines
 	for (k=0; k< length_roles; k++) {
 		count_temp = 0;
 	
@@ -174,6 +205,7 @@ function ui_update_roles_select () {
 		}
 		status = '正常';
 		if ((global_roles[k].flag_unique == 1 && count_temp == 0) || (global_roles[k].flag_unique == 0)) {
+			// enable "not unique" and "unique but not have"
 			$('.m_roles_select > option[value="' + global_roles[k].id + '"]').removeAttr('disabled');
 		}
 	}
@@ -181,16 +213,32 @@ function ui_update_roles_select () {
 	for (i=0; i< length_machines; i++) {
 		id_machine = global_machines[i].id;
 		roles_select = $('#m_' + id_machine + '_roles_select');
+		
+		// get conflict mask, disable others
+		conflict_mask = 0;
+			
 		for (j=0; j< global_machines[i].roles.length; j++) {
 			$('#m_' + id_machine + '_roles_select > option[value="' + global_machines[i].roles[j].id + '"]').attr('disabled','disabled');
 			if (global_machines[i].roles[j].flag_exclusive == 1) {
 				$('#m_' + id_machine + '_roles_select > .m_roles_select_option').attr('disabled','disabled');
 			}
 			
+			// if find exclusive role, disable others
 			for (k=0; k< length_roles; k++) {
 				if (global_roles[k].flag_exclusive == 1) {
 					$('#m_' + id_machine + '_roles_select > option[value="' + global_roles[k].id + '"]').attr('disabled','disabled');
 				}
+			}
+			
+			
+			conflict_mask =  conflict_mask | global_machines[i].roles[j].flag_conflict;
+		}
+		
+
+		// if find conflict role, disable it
+		for (k=0; k< length_roles; k++) {
+			if (global_roles[k].flag_conflict & conflict_mask != 0) {
+				$('#m_' + id_machine + '_roles_select > option[value="' + global_roles[k].id + '"]').attr('disabled','disabled');
 			}
 		}
 	}
@@ -209,11 +257,23 @@ function ui_notice_hide() {
 }
 
 function ui_notice_show_loading() {
+	$('#notice_close').click(function () {
+		ui_notice_hide();
+	});
 	$('#notice_content_middile').show();
     $('#notice_content_middile').html('<img src="theme/loading.gif" />');
 }
 
-function ui_notice_show_message(message) {
+function ui_notice_show_message(message, reload) {
+	if (reload == null) {
+		$('#notice_close').click(function () {
+			ui_notice_hide();
+		});
+	} else {
+		$('#notice_close').click(function () {
+			window.location.reload();
+		});
+	}
 	$('#notice_content_middile').show();
     $('#notice_content_middile').html(message);
 }
@@ -345,7 +405,7 @@ function validator_ipv4(value) {
 }
 
 function validator_hostname(value) {
-	var reg_name=/^.*$/;  
+	var reg_name=/^(([a-zA-Z0-9]|[a-zA-Z0-9][a-zA-Z0-9-]*[a-zA-Z0-9])\.)+([A-Za-z]|[A-Za-z][A-Za-z0-9-]*[A-Za-z0-9])$/;  
 	if(!reg_name.test(value.toUpperCase())){  
 		return 'false';  
 	} 
@@ -357,7 +417,6 @@ function test() {
 }
 
 function debug() {
-	ui_notice_show_loading()
-	ui_notice_show ('debug');
+	ui_notice_show_message('hi')
 }
 
