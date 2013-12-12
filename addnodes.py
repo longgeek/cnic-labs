@@ -289,7 +289,7 @@ def write_conf(data):
             os.system("sed -i '/^$ceilometer_api_host.*$/ s/=.*$/= \"%s\"/g' %s" %
                                           (node_info['hostname'], puppet_site))
 
-        if 'glusterfs' or 'glusterfs-client' in node_info["type"]:
+        if ('glusterfs' in node_info["type"]) or ('glusterfs-client' in node_info["type"]):
             glusterfs_list.append(node_info['ip'])
             os.system("sed -i '/^$cinder_volume_format.*$/ s/=.*$/= \"glusterfs\"/g' %s" % puppet_site)
 
