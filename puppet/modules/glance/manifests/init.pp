@@ -49,6 +49,13 @@ class glance {
                     /etc/init.d/glance-registry restart",
         path => $command_path,
         refreshonly => true,
+        notify => Exec["glance db_sync"],
+    }
+
+    exec { "glance db_sync":
+        command => "glance-manage db_sync",
+        path => $command_path,
+        onlyif => "mysql -u$glance_db_user -p$glance_db_password -h $mysql_host $glance_db_name -e 'show tables;' && [ \"`mysql -u$glance_db_user -p$glance_db_password -h $mysql_host $glance_db_name -e 'show tables;' | wc -l`\" -eq \"0\" ]",
         notify => Service["glance-api", "glance-registry"],
     }
 
@@ -70,6 +77,6 @@ class glance {
                     glance --os_username=admin --os_password=${admin_password} --os_tenant_name=admin --os_auth_url=http://${keystone_host}:5000/v2.0 image-delete `glance --os_username=admin --os_password=${admin_password} --os_tenant_name=admin --os_auth_url=http://${keystone_host}:5000/v2.0 image-list | grep cirros | awk -F'|' '{print \$2}'`; \
                     glance --os_username=admin --os_password=${admin_password} --os_tenant_name=admin --os_auth_url=http://${keystone_host}:5000/v2.0 image-create --name='cirros-0.3.0' --public --container-format=ovf --disk-format=qcow2 < /etc/glance/cirros-0.3.0-x86_64-disk.img",
         path => $command_path,
-        unless => "[ \"`ls $source_dir/data/glance/images/ | wc -l`\" -ne \"0\" ]",
+        onlyif => "[ \"`ls $source_dir/data/glance/images/ | wc -l`\" -eq \"0\" ] && /etc/init.d/glance-api restart && /etc/init.d/glance-registry restart && glance --os_username=admin --os_password=${admin_password} --os_tenant_name=admin --os_auth_url=http://${keystone_host}:5000/v2.0 image-list",
     }
 }

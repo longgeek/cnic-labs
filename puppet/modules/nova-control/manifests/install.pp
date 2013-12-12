@@ -179,6 +179,13 @@ class nova-control::install {
                     /etc/init.d/nova-xvpvncproxy restart",
         path => $command_path,
         refreshonly => true,
+        notify => Exec["nova db_sync"],
+    }
+
+    exec { "nova db_sync":
+        command => "nova-manage db sync",
+        path => $command_path,
+        onlyif => "mysql -u$nova_db_user -p$nova_db_password -h $mysql_host $nova_db_name -e 'show tables;' && [ \"`mysql -u$nova_db_user -p$nova_db_password -h $mysql_host $nova_db_name -e 'show tables;' | wc -l`\" -eq \"0\" ]",
         notify => Service["nova-api", "nova-cert", "nova-scheduler", "nova-consoleauth", "nova-console", "nova-novncproxy", "nova-xvpvncproxy"],
     }
 
@@ -226,5 +233,4 @@ class nova-control::install {
             enable => false,
         }
       }
-
 }

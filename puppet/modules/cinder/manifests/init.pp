@@ -102,6 +102,13 @@ class cinder {
                     /etc/init.d/cinder-volume restart",
         path => $command_path,
         refreshonly => true,
+        notify => Exec["cinder db sync"],
+    }
+
+    exec { "cinder db sync":
+        command => "cinder-manage db sync",
+        path => $command_path,
+        onlyif => "mysql -u$cinder_db_user -p$cinder_db_password -h $mysql_host $cinder_db_name -e 'show tables;' && [ \"`mysql -u$cinder_db_user -p$cinder_db_password -h $mysql_host $cinder_db_name -e 'show tables;' | wc -l`\" -eq \"0\" ]",
         notify => Service["cinder-api", "cinder-scheduler", "cinder-volume"],
     }
 

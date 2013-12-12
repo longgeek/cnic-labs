@@ -74,9 +74,16 @@ class horizon {
 
     file { "/etc/apache2/conf.d/horizon.conf":
         content => template("horizon/horizon.conf.erb"),
-        notify => [Exec["memcache listen"], Service["apache2", "memcached"]],
+        notify => Exec["horizon sync db"],
     }
     
+    exec { "horizon sync db":
+        command => "python $source_dir/horizon/manage.py syncdb --noinput",
+        path => $command_path,
+        onlyif => "mysql -u$horizon_db_user -p$horizon_db_password -h $mysql_host $horizon_db_name -e 'show tables;' && [ \"`mysql -u$horizon_db_user -p$horizon_db_password -h $mysql_host $horizon_db_name -e 'show tables;' | wc -l`\" -eq \"0\" ]",
+        notify => [Exec["memcache listen"], Service["apache2", "memcached"]],
+    }
+
     exec { "memcache listen":
         command => "sed -i 's/127.0.0.1/0.0.0.0/g' /etc/memcached.conf; \
                     /etc/init.d/memcached restart",
