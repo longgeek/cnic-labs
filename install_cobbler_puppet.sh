@@ -48,7 +48,7 @@ echo "deb file:///var/www/ deb-packages/" > /etc/apt/sources.list
 apt-get update || exit 0
 
 ## 安装相关软件包
-apt-get -y --force-yes install cobbler cobbler-web dnsmasq debmirror ntp lvm2 unzip ipmitool || exit 0
+apt-get -y --force-yes install cobbler cobbler-web dnsmasq debmirror ntp unzip ipmitool || exit 0
 
 ## 修改 Cobbler 配置文件
 COBBLER_PATH='/etc/cobbler/settings'

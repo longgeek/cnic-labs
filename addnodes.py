@@ -82,8 +82,8 @@ def write_conf(data):
         dhcp_hosts_conf_content.write("dhcp-host=%s,%s,%s\n" % 
             (node_info["ip"], node_info["hostname"], node_info["mac"]))
         # 把解析记录写到 puppet 得 bases 模块中
-        puppet_hosts_conf.write("%s %s\n" % (node_info["ip"], 
-                                    node_info["hostname"]))
+        puppet_hosts_conf.write("%s %s %s\n" % (node_info["ip"], 
+                                    node_info["hostname"], node_info["hostname"].split(".")[0]))
 
         all_nodes_list.append(node_info["hostname"])
 
@@ -305,6 +305,7 @@ def write_conf(data):
     puppet_hosts_conf.close()
 
     # 重启服务
+    os.system("> /var/lib/misc/dnsmasq.leases")
     os.system("/etc/init.d/dnsmasq restart > /dev/null 2>&1; /etc/init.d/cobbler restart > /dev/null 2>&1")
     print '{"return": 1, "type": 0}'
 
