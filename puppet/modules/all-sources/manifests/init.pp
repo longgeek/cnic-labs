@@ -27,6 +27,7 @@ class all-sources {
 
     exec { "initialization base":
         command => "mkdir -p /root/.pip; usermod nova -G kvm,libvirtd; \
+                    apt-get -y --force-yes install python-mysqldb mysql-client-5.5; \
                     echo 'nova    ALL=(ALL:ALL) NOPASSWD:NOPASSWD:ALL' >> /etc/sudoers; \
                     echo 'StrictHostKeyChecking  no' >> /etc/ssh/ssh_config; \
                     /etc/init.d/ssh restart; \
