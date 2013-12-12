@@ -237,7 +237,7 @@ function ui_update_roles_select () {
 
 		// if find conflict role, disable it
 		for (k=0; k< length_roles; k++) {
-			if (global_roles[k].flag_conflict & conflict_mask != 0) {
+			if ((parseInt(global_roles[k].flag_conflict) & conflict_mask) != 0) {
 				$('#m_' + id_machine + '_roles_select > option[value="' + global_roles[k].id + '"]').attr('disabled','disabled');
 			}
 		}
