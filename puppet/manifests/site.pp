@@ -109,7 +109,7 @@ $monitor_db_password                = 'monitor'
 $ceilometer_api_host                = '%ceilometer_api_host%'
 
 ## SWIFT
-$swift_proxy_host                   = '%swift_proxy_host%''
+$swift_proxy_host                   = '%swift_proxy_host%'
 $swift_devices                      = "$source_dir/data/swift"
 $swift_version                      = 'grizzly'
 $gluster_swift_version              = $swift_version
