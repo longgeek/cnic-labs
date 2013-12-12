@@ -189,11 +189,18 @@ function action_deploy () {
 	
 	$json_result =  json_encode($items);
 	$str = 'python "/usr/bin/addnodes.py" \''.$json_result.'\'';
-	echo $str."\r\n";
+// #	echo $str."\r\n";
 	exec('sudo -u root -S '.$str, $res, $rc);
 	//exec('python test.py', $res, $rc);
-	print_r($res);
-	echo $rc;
+// #	print_r($res);
+// #	echo $rc;
+
+	$count_line = count($res);
+	if($count_line == 0) {
+		echo '{"return": 0, "type": 0}';
+	} else {
+		echo $res[$count_line -1];
+	}
 }
 
 
