@@ -1,15 +1,17 @@
 class glusterfs-client::install {
-    package { ["flex", "bison", "attr", "libssl-dev", "openssl", "xfsprogs"]:
-        ensure => installed,
-        notify => File["$source_dir/glusterfs-$glusterfs_version.tar.gz"],
+    exec { "packages install":
+        command => "apt-get -y --force-yes install flex bison attr libssl-dev openssl xfsprogs",
+        path => $command_path,
+        unless => "dpkg -l | grep xfsprogs && dpkg -l | grep flex && dpkg -l | grep bison && dpkg -l | grep attr && dpkg -l | grep libssl-dev",
+        notify => File["$source_dir/glusterfs-$glusterfs_version.tgz"],
     }
 
-    file { "$source_dir/glusterfs-$glusterfs_version.tar.gz":
+    file { "$source_dir/glusterfs-$glusterfs_version.tgz":
         source => "puppet:///files/glusterfs-$glusterfs_version.tar.gz",
-        notify => Exec["untar glusterfs"],
+        notify => Exec["untar glusterf"],
     }
 
-    exec { "untar glusterfs":
+    exec { "untar glusterf":
         command => "[ -e $source_dir/glusterfs-$glusterfs_version ] && \
                     rm -fr $source_dir/glusterfs-$glusterfs_version; \
                     cd $source_dir; \
