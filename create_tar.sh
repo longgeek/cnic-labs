@@ -5,12 +5,25 @@ TOP_DIR=$(cd $(dirname "$0") && pwd)
 cd $TOP_DIR
 cd ../
 
+ceilometer_tar () {
+    echo "\nPacking ceilometer ....."
+    mkdir /tmp/create_tar_tmp/
+    cp -r ceilometer /tmp/create_tar_tmp
+    rm -fr /tmp/create_tar_tmp/ceilometer/grizzlyenv
+    cp -r grizzlyenv /tmp/create_tar_tmp/ceilometer
+    cd /tmp/create_tar_tmp
+    tar zcf $TOP_DIR/puppet/files/ceilometer.tar.gz ceilometer/
+    rm -fr /tmp/create_tar_tmp/
+}
+
 all_tar() {
-    for i in nova cinder glance keystone horizon noVNC savanna ceilometer openstack_auth ganglia-webfrontend python-ceilometerclient python-cinderclient python-glanceclient python-keystoneclient python-novaclient python-navigatorclient
+    for i in nova cinder glance keystone horizon noVNC savanna openstack_auth ganglia-webfrontend python-ceilometerclient python-cinderclient python-glanceclient python-keystoneclient python-novaclient python-navigatorclient
     do
         echo "\nPacking $i ....."
         sudo tar zcf $TOP_DIR/puppet/files/$i.tar.gz $i
     done
+
+    ceilometer_tar
 }
 
 one_tar() {
@@ -49,7 +62,7 @@ case $pack_name in
     'e') pack_name='horizon'; one_tar;;
     'f') pack_name='noVNC'; one_tar;;
     'g') pack_name='savanna'; one_tar;;
-    'h') pack_name='ceilometer'; one_tar;;
+    'h') pack_name='ceilometer'; ceilometer_tar;;
     'i') pack_name='openstack_auth'; one_tar;;
     'j') pack_name='ganglia-webfrontend'; one_tar;;
     'k') pack_name='python-ceilometerclient'; one_tar;;
