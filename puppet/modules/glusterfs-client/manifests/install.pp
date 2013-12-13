@@ -15,7 +15,7 @@ class glusterfs-client::install {
         command => "[ -e $source_dir/glusterfs-$glusterfs_version ] && \
                     rm -fr $source_dir/glusterfs-$glusterfs_version; \
                     cd $source_dir; \
-                    tar zxvf glusterfs-$glusterfs_version.tar.gz; \
+                    tar zxvf glusterfs-$glusterfs_version.tgz; \
                     cd glusterfs-$glusterfs_version; \
                     ./configure --prefix=/usr --localstatedir=/var --sysconfdir=/etc; \
                     make; \
