@@ -405,7 +405,7 @@ function validator_ipv4(value) {
 }
 
 function validator_hostname(value) {
-	var reg_name=/^(([a-zA-Z0-9]|[a-zA-Z0-9][a-zA-Z0-9-]*[a-zA-Z0-9])\.)+([A-Za-z]|[A-Za-z][A-Za-z0-9-]*[A-Za-z0-9])$/;  
+	var reg_name=/^(([a-zA-Z0-9]|[a-zA-Z0-9][a-zA-Z0-9-]*[a-zA-Z0-9])\.)+(([A-Za-z]|[A-Za-z][A-Za-z0-9-]*[A-Za-z0-9])\.)+([A-Za-z]|[A-Za-z][A-Za-z0-9-]*[A-Za-z0-9])$/;  
 	if(!reg_name.test(value.toUpperCase())){  
 		return 'false';  
 	} 
