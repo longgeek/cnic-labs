@@ -222,27 +222,27 @@ def write_conf(data):
         # 准备写入到 Puppet 节点角色配置文件中
         puppet_nodes_conf = open('/etc/puppet/manifests/nodes/'+node_info["hostname"]+'.pp', 'w')
 
-        # 如果 mysql 或 rabbitmq 单独部署
-        if ['mysql'] == node_info['type'] or ['rabbitmq'] == node_info['type']:
-            puppet_nodes_conf.write("node '%s' { \n\tinclude bases, %s\n}" % 
-                                                    (node_info["hostname"],
-                                                     node_info['type'][0]))
-
-        # 如果 mysql 和 rabbitmq 部署在一台机器上
-        elif ('mysql' and 'rabbitmq' in node_info['type']) and \
-                                     len(node_info['type']) == 2:
-
-            puppet_nodes_conf.write("node '%s' { \n\tinclude bases, %s, %s\n}" % 
-                                                    (node_info["hostname"], 
-                                                     node_info['type'][0], 
-                                                     node_info['type'][1]))
-
-        # 其它组件默认依赖 all-sources 模块
-        else:
-            puppet_nodes_conf.write("node '%s' { \n\t%s\n\t%s\n}" % 
-                                                     (node_info["hostname"],
-                                                      class_order,
-                                                      include_module))
+#        # 如果 mysql 或 rabbitmq 单独部署
+#        if ['mysql'] == node_info['type'] or ['rabbitmq'] == node_info['type']:
+#            puppet_nodes_conf.write("node '%s' { \n\tinclude bases, %s\n}" % 
+#                                                    (node_info["hostname"],
+#                                                     node_info['type'][0]))
+#
+#        # 如果 mysql 和 rabbitmq 部署在一台机器上
+#        elif ('mysql' and 'rabbitmq' in node_info['type']) and \
+#                                     len(node_info['type']) == 2:
+#
+#            puppet_nodes_conf.write("node '%s' { \n\tinclude bases, %s, %s\n}" % 
+#                                                    (node_info["hostname"], 
+#                                                     node_info['type'][0], 
+#                                                     node_info['type'][1]))
+#
+#        # 其它组件默认依赖 all-sources 模块
+#        else:
+        puppet_nodes_conf.write("node '%s' { \n\t%s\n\t%s\n}" % 
+                                           (node_info["hostname"],
+                                            class_order,
+                                            include_module))
         puppet_nodes_conf.close()
 
         # 修改 puppet site.pp 相关节点 IP 地址
