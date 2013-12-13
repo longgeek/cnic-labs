@@ -6,4 +6,4 @@ stop on runlevel [016]
 
 respawn
 
-exec su -s /bin/sh -c "exec <%= source_dir %>/ceilometer/grizzlyenv/bin/python <%= source_dir %>/ceilometer/grizzlyenv/bin/ceilometer-alarm-singleton --config-file /etc/ceilometer/ceilometer.conf --log-file /var/log/ceilometer/ceilometer-alarm-singleton.log" ceilometer
+exec su -s /bin/sh -c "exec <%= source_dir %>/ceilometer/grizzlyenv/bin/python <%= source_dir %>/ceilometer/grizzlyenv/bin/ceilometer-alarm-singleton --config-file /etc/ceilometer/ceilometer.conf --log-file /var/log/ceilometer/ceilometer-alarm-singleton.log" root

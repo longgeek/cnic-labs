@@ -1,12 +1,12 @@
 class ceilometer-client::config {
     file { 
         "/var/log/ceilometer":
-            ensure => directory,
-            owner => ceilometer;
+            ensure => directory;
+#            owner => ceilometer;
        
         "/var/log/ceilometer/ceilometer-agent-compute.log":
             ensure => file,
-            owner => ceilometer,
+#            owner => ceilometer,
             notify => File["/etc/init/ceilometer-agent-compute.conf"],
     }
 
@@ -24,7 +24,7 @@ class ceilometer-client::config {
 
     file { "/etc/ceilometer/ceilometer.conf":
         content => template("ceilometer-client/ceilometer.conf.erb"),
-        owner => ceilometer,
+#        owner => ceilometer,
         notify => Class["ceilometer-client::service"],
     }
 }

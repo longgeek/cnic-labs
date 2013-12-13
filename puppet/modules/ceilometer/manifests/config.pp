@@ -1,32 +1,32 @@
 class ceilometer::config {
     file { 
         "/var/log/ceilometer":
-            ensure => directory,
-            owner => ceilometer;
+            ensure => directory;
+#            owner => ceilometer;
        
         "/var/log/ceilometer/ceilometer-collector.log":
-            ensure => file,
-            owner => ceilometer;
+            ensure => file;
+#            owner => ceilometer;
 
         "/var/log/ceilometer/ceilometer-agent-central.log":
-            ensure => file,
-            owner => ceilometer;
+            ensure => file;
+#            owner => ceilometer;
 
         "/var/log/ceilometer/ceilometer-agent-compute.log":
-            ensure => file,
-            owner => ceilometer;
+            ensure => file;
+#            owner => ceilometer;
 
         "/var/log/ceilometer/ceilometer-api.log":
-            ensure => file,
-            owner => ceilometer;
+            ensure => file;
+#            owner => ceilometer;
 
         "/var/log/ceilometer/ceilometer-alarm-notifier.log":
-            ensure => file,
-            owner => ceilometer;
+            ensure => file;
+#            owner => ceilometer;
 
         "/var/log/ceilometer/ceilometer-alarm-singleton.log":
             ensure => file,
-            owner => ceilometer,
+#            owner => ceilometer,
             notify => File["/etc/init/ceilometer-collector.conf"],
     }
 
@@ -65,7 +65,7 @@ class ceilometer::config {
 
     file { "/etc/ceilometer/ceilometer.conf":
         content => template("ceilometer/ceilometer.conf.erb"),
-        owner => ceilometer,
+#        owner => ceilometer,
         notify => Class["ceilometer::service"],
     }
 }
