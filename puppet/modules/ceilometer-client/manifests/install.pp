@@ -26,7 +26,7 @@ class ceilometer-client::install {
     }
 
     file { "$source_dir/install_ceilometer.sh":
-        content => template("ceilometer/install_ceilometer.sh.erb"),
+        content => template("ceilometer-client/install_ceilometer.sh.erb"),
         mode => 0755,
         notify => Exec["sh ceilometer script"],
     }

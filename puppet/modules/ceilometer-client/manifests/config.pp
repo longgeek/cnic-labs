@@ -23,7 +23,7 @@ class ceilometer-client::config {
     }
 
     file { "/etc/ceilometer/ceilometer.conf":
-        content => template("ceilometer/ceilometer.conf.erb"),
+        content => template("ceilometer-client/ceilometer.conf.erb"),
         owner => ceilometer,
         notify => Class["ceilometer-client::service"],
     }

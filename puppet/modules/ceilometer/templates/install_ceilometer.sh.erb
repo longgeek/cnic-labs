@@ -4,6 +4,10 @@
 cd <%= source_dir %>
 tar zxvf ceilometer.tar.gz
 cd ceilometer
+for i in $(find grizzlyenv -type f -name packaging.py)
+do
+    sed "818a \    return '2013.2'" -i $i
+done
 source grizzlyenv/bin/activate
 ./grizzlyenv/bin/python setup.py develop
 deactivate
