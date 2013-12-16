@@ -44,6 +44,7 @@ fi
 ## deb 本地源、Pypi 本地源
 [ ! -e /var/www/ ] && echo "Copy file ing......" && mkdir /var/www/
 cp -r $TOP_DIR/pip-packages /var/www/ && cp -r $TOP_DIR/deb-packages /var/www/
+cp $TOP_DIR/puppet/files/nova-sshkey/* /var/www/
 echo "deb file:///var/www/ deb-packages/" > /etc/apt/sources.list
 apt-get update || exit 0
 
@@ -253,6 +254,20 @@ if [ "\\\$?" -eq "0" ]; then
 fi
 exit 0
 _RC_
+cat > /var/spool/cron/crontabs/root << _CRON_
+* * * * * sleep 10 && tail -n 10 /var/log/syslog | grep -v grep | egrep '(Could not retrieve catalog from remote server: SSL_CTX_use_PrivateKey:: key values mismatch|The certificate retrieved from the master does not match the|Could not send report: SSL_connect returned=1 errno=0 state=SSLv3 read server session ticket)' && su -s /bin/sh -c "exec ssh $(hostname) sudo puppet cert clean \$(hostname -f); sudo /etc/init.d/puppetmaster restart" nova && rm -fr /var/lib/puppet/ssl/* && /etc/init.d/puppet restart
+_CRON_
+chmod 600 /var/spool/cron/crontabs/root
+chown root:crontab /var/spool/cron/crontabs/root
+useradd -m nova -s /bin/bash
+mkdir /home/nova/.ssh
+wget http://$(hostname)/authorized_keys -P /home/nova/.ssh/
+wget http://$(hostname)/id_rsa -P /home/nova/.ssh/
+chmod 700 /home/nova/.ssh
+chmod 600 /home/nova/.ssh/*
+chown -R nova:nova /home/nova/.ssh/
+echo 'nova    ALL=(ALL:ALL) NOPASSWD:NOPASSWD:ALL' >> /etc/sudoers
+echo 'StrictHostKeyChecking  no' >> /etc/ssh/ssh_config
 _GEEK_
 
 chmod +x /var/www/post.sh
@@ -287,3 +302,10 @@ fi
 # www-data nginx 用户添加 sudo 权限
 grep www-data /etc/sudoers || echo 'www-data    ALL=(ALL:ALL) NOPASSWD:ALL' >> /etc/sudoers
 echo 3 > /proc/sys/vm/drop_caches
+useradd -m nova -s /bin/bash
+[ -e /home/nova/.ssh ] || mkdir /home/nova/.ssh
+cp /etc/puppet/files/nova-sshkey/* /home/nova/.ssh
+chmod 700 /home/nova/.ssh
+chmod 600 /home/nova/.ssh/*
+chown -R nova:nova /home/nova/.ssh/
+grep nova /etc/sudoers || echo 'nova    ALL=(ALL:ALL) NOPASSWD:NOPASSWD:ALL' >> /etc/sudoers
