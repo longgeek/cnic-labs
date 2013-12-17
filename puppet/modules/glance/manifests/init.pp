@@ -79,4 +79,6 @@ class glance {
         path => $command_path,
         onlyif => "[ \"`ls $source_dir/data/glance/images/ | wc -l`\" -eq \"0\" ] && /etc/init.d/glance-api restart && /etc/init.d/glance-registry restart && glance --os_username=admin --os_password=${admin_password} --os_tenant_name=admin --os_auth_url=http://${keystone_host}:5000/v2.0 image-list",
     }
+
+    include glance::log
 }

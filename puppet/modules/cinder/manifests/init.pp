@@ -118,4 +118,6 @@ class cinder {
         hasstatus => true,
         hasrestart => true,
     }
+
+    include cinder::log
 }

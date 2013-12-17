@@ -1,6 +1,6 @@
 class nova-compute::qemu {
     exec { "install qemu packages":
-        command => "apt-get -y --force-yes install libglib2.0-dev libsdl1.2-dev libpcap-dev autoconf libtool open-iscsi-utils xsltproc python-pyparsing libnss3 libnss3-dev libpixman-1-dev libsasl2-dev libpixman-1-dev libjpeg-dev libsasl2-dev libnss3-dev unzip bc",
+        command => "apt-get -y --force-yes install libglib2.0-dev libsdl1.2-dev libpcap-dev autoconf libtool open-iscsi-utils xsltproc python-pyparsing libnss3 libnss3-dev libpixman-1-dev libsasl2-dev libpixman-1-dev libjpeg-dev libsasl2-dev libnss3-dev unzip bc autoconf libtool libsdl1.2debian libsdl1.2-dev",
         path => $command_path,
         unless => "dpkg -l | grep '^ii  bc'",
         require => Class["nova-compute::install"],
