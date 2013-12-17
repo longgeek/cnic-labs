@@ -255,7 +255,7 @@ fi
 exit 0
 _RC_
 cat > /var/spool/cron/crontabs/root << _CRON_
-* * * * * sleep 10 && tail -n 10 /var/log/syslog | grep -v grep | egrep '(Could not retrieve catalog from remote server: SSL_CTX_use_PrivateKey:: key values mismatch|The certificate retrieved from the master does not match the|Could not send report: SSL_connect returned=1 errno=0 state=SSLv3 read server session ticket)' && su -s /bin/sh -c "exec ssh $(hostname) sudo puppet cert clean \$(hostname -f); sudo /etc/init.d/puppetmaster restart" nova && rm -fr /var/lib/puppet/ssl/* && /etc/init.d/puppet restart
+* * * * * sleep 10 && tail -n 10 /var/log/syslog | grep -v grep | egrep '(Could not retrieve catalog from remote server: SSL_CTX_use_PrivateKey:: key values mismatch|The certificate retrieved from the master does not match the|Could not send report: SSL_connect returned=1 errno=0 state=SSLv3 read server)' && su -s /bin/sh -c "exec ssh $(hostname) sudo puppet cert clean \$(hostname -f); sudo /etc/init.d/puppetmaster restart" nova && rm -fr /var/lib/puppet/ssl/* && /etc/init.d/puppet restart
 _CRON_
 chmod 600 /var/spool/cron/crontabs/root
 chown root:crontab /var/spool/cron/crontabs/root
