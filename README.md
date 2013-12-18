@@ -1,4 +1,4 @@
-OpenStack-Source-Puppet-Install-Folsom
+ECCP 自动化部署
 ======================================
 
 用 **Cobbler** 和 **Puppet** 方式来源码安装 **OpenStack Folsom**.
@@ -68,16 +68,21 @@ OpenStack-Source-Puppet-Install-Folsom
     `# cd /opt/eccp/eccp_auto_install`
     
     *用脚本自动安装 Cobbler 和 Puppet，两分钟左右就可以安装完：*
+    *默认所有节点的 root 密码为 eccp，修改请编辑 install_cobbler_puppet.sh*
+        
+    `# vim install_cobbler_puppet.sh`
     
-    `# sh install_cobbler_puppet.sh`
+		ROOT_PASSWORD='changeit' 
+		
+	`# sh install_cobbler_puppet.sh`
     
 ### Access
 
 *安装完后有两个界面：*
 
 
-- **Cobbler Web:** &nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;<http://172.16.0.222:12001>
-- **Eccp Deploy Web:** &nbsp;<http://172.16.0.222:12002>
+- **Cobbler Web:** &nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;<http://172.16.0.222:12001> 用来管理 Cobbler。
+- **Eccp Deploy Web:** &nbsp;<http://172.16.0.222:12002> 界面方式添加节点来实现自动化部署。
 
 
 ## How to Configure?
@@ -207,6 +212,8 @@ OpenStack-Source-Puppet-Install-Folsom
     
     
 **后缀为 _ requires、 _ host、 _ list 不可以更改其的值。后缀为: _version 项用来做源码包版本的控制**
+
+- - -
     
     
 ## 三. How to Upgrade？
@@ -288,12 +295,23 @@ OpenStack-Source-Puppet-Install-Folsom
 *修改 /etc/puppet/manifests/site.pp 文件中的相关版本控制：*
 
 	# vim /etc/puppet/manifests/site.pp
-    	$libvirt_version = '1.2.0'
+     	$libvirt_version = '1.2.0'
     	$swift_version = 'havana'
     	$glusterfs_version = '3.4.1'
     	$qemu_version = '1.7.0'
 	# cp *.tar.gz /etc/puppet/files/
 
+### Horizon Update
+**horizon 在修改 settings.py 后需要做手工操作：**
+
+1. cd auto_install_eccp/puppet/modules/horizon/templates/
+2. 手工修改 savanna.settings.py.erb 和 settings.py.erb 到最新版本。
+
+### License Update
+
+*拷贝新的 eccp.license 文件到部署服务器上的 /etc/puppet/files/ 目录中*
+
+- - -
 
 ## 四. Check The Installation Results
 
@@ -321,6 +339,7 @@ OpenStack-Source-Puppet-Install-Folsom
 
 *或者登录安装的节点查看 /var/log/syslog 相应服务端口。*
 
+- - -
 
 ## 五. Puppet Module Description
 
@@ -382,7 +401,7 @@ OpenStack-Source-Puppet-Install-Folsom
 
 		nova 控制器模块，包含了 nova-api、nova-cert、nova-scheduler、nova-console、nova-consoleauth、nova-vncproxy、nova-xvpvncproxy、nova-network、nova-compute、libvirt-bin 服务。
 		配置文件在 /etc/nova 目录下，log 文件在 /var/log/nova 中，instances 数据在 $source_dir/data/nova 目录中.
-		启动的端口有 8774、8775、6080
+		启动的端口有 8773、8774、8775、6080、6081
 		服务启动脚本都在 /etc/init.d/ 目录中
 		常用命令:
 		# nova-manager service list
@@ -396,14 +415,14 @@ OpenStack-Source-Puppet-Install-Folsom
 
 		nova 计算节点模块，只包含 nova-network、nova-compute、nova-metadata-api、libvirt-bin 服务。
 		配置文件在 /etc/nova 目录下，log 文件在 /var/log/nova 中，instances 数据在 $source_dir/data/nova 目录中.
-		启动的端口 8774
+		启动的端口 8775
 		服务启动脚本在 /etc/init.d/ 目录中
 		
 - ceilometer
 
 		ceilometer 主节点模块上面运行了 mongodb、ceilometer-collector、ceilometer-agent-central、ceilometer-agent-compute、ceilometer-api、ceilometer-alarm-notifier、ceilometer-alarm-singleton 服务。
 		配置文件在 /etc/ceilometer 目录，log 日志文件在 /var/log/ceilometer/ 目录下。
-		启动的端口有:
+		启动的端口有: 8777
 		
 - ceilometer-client
 
@@ -414,7 +433,7 @@ OpenStack-Source-Puppet-Install-Folsom
 		
 - ganglia
 
-		ganglia 模块运行了两个服务: gmetad、ganglia-monitor，监听端口为 8149. 默认会在 horizon 模块所在节点上安装，在 eccp web 界面上不显示。（ganglia-webfrontend 这个包用来在 web 展示，故 ganglia 必须和 horizon 安装在一个节点）。
+		ganglia 模块运行了两个服务: gmetad、ganglia-monitor，监听端口为 8649、8651、8652. 默认会在 horizon 模块所在节点上安装，在 eccp web 界面上不显示。（ganglia-webfrontend 这个包用来在 web 展示，故 ganglia 必须和 horizon 安装在一个节点）。
 		ganglia 配置文件在 /etc/ganglia/。
 		服务脚本：
 		# /etc/init.d/gmead restart
@@ -422,7 +441,7 @@ OpenStack-Source-Puppet-Install-Folsom
 		
 - ganglia-client 
 
-		ganglia 客户端模块只运行了一个 ganglia-monitor 服务，监听端口为 8149。ganglia-client 模块像 ceilometer-client 模块安装在除 ganglia|horizon 节点的其它所有节点上。同时也像 ganglia、ceilometer-client 模块一样无法在界面选择.
+		ganglia 客户端模块只运行了一个 ganglia-monitor 服务，监听端口为 8649。ganglia-client 模块像 ceilometer-client 模块安装在除 ganglia|horizon 节点的其它所有节点上。同时也像 ganglia、ceilometer-client 模块一样无法在界面选择.
 		其配置文件在 /etc/ganglia/ 目录中
 		服务脚本：
 		# /etc/init.d/ganglia-monitor restart
@@ -458,17 +477,37 @@ OpenStack-Source-Puppet-Install-Folsom
 		常用命令：
 		＃ glusterfs peer status
 		＃ glusterfs volume info
-
-
-
-
-
-
 		
+- savanna
+
+		savanna 模块用来启动一个 savanna-api 服务，监听端口为 8386，配置文件在 /etc/savanna/ 下，log 在 /var/log/savanna/ 下。
+		＃ /etc/init.d/savanna-api restart
+		
+- swift 
+
+		swift 模块用来安装 swift 分布式对象存储，默认安装了 proxy、account、container、object 服务，默认使用了 Glusterfs 做 Swift 的后端存储，故备份次数为一。
+		监听端口有：8080、6010、6011、6012，配置文件在 /etc/swift/ ，log 在 /var/log/swift/。
+		启动服务：
+		# swift-init main restart
+		
+**打包完要更新的包后，务必在本地环境内测试通过后，拷贝到线上环境的 Puppet 部署服务器中的 /etc/puppet/files/ 目录中**
+
+- - -
+
+## 六. NOTE
+		
+###界面使用注意事项
+
+1. 主机名框必须是 FQDN （主机名 + 域名）
+2. 部署和立即部署按钮会自动让有远控卡信息的机器临时从 PXE 启动一次来安装操作系统，不要频繁点击这两个按钮。
+3. 更改任何信息项后，先点击保存按钮
+4. 添加一个节点后，点击保存按钮保存数据，在点击部署按钮来检查输入信息是否有误，无误既开始部署。当添加完所有节点后必须点击一次立即部署按钮。
+5. 没有远控卡的机器需要人工让机器从 PXE 启动。
+6. 点击部署或立即部署按钮后，请耐心等待页面。
 
 
+### 部署服务器上运行 Nova 控制器
 
+1. 在界面添加控制节点为部署节点时候，不必填写远控卡信息，否则会重启机器。
+2. 创建 vm 分配到控制节点时候，会卡在网络，原因是 nova-network 会启动 dnsmasq 进程，而 dnsmasq 进程被部署服务器占用。
 
-注意：
-
-创建 vm 分配到控制节点时候，会卡在网络，原因是 nova-network 会启动 dnsmasq 进程，而 dnsmasq 进程被部署服务器占用
